@@ -1,1 +1,1 @@
-# fitness-ai-dashboard
+# Fitness Stride Monitoring App
