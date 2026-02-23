@@ -2,13 +2,13 @@ import streamlit as st
 import plotly.graph_objects as go
 
 # --- PAGE CONFIG ---
-st.set_page_config(page_title="FitnessPro AI", layout="centered")
+st.set_page_config(page_title="Fitness Stride Monitoring App", layout="centered")
 
-# --- SHARED DATA ---
+# --- Self Data  ---
 days = ["Fri", "Sat", "Sun", "Mon", "Tue", "Wed", "Thu"]
 activity_data = [2.9, 8.9, 2.5, 407, 1.2, 10.4, 14]
 
-# --- ALL-IN-ONE PREMIUM CSS ---
+# --- CSS for the ux ---
 st.markdown("""
     <style>
     @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;800&display=swap');
@@ -80,7 +80,7 @@ st.markdown("""
     </style>
     """, unsafe_allow_html=True)
 
-# --- NAVIGATION ---
+# --- Navigation for all 4 sections ---
 menu = st.sidebar.radio("Navigation", ["Dashboard", "Highlights", "Awards", "Step Analytics"])
 
 if menu == "Dashboard":
@@ -171,3 +171,4 @@ elif menu == "Step Analytics":
             <div style="background:rgba(74, 222, 128, 0.2); padding:10px; border-radius:15px; color:#4ade80;">▲ 81%</div>
         </div>
     """, unsafe_allow_html=True)
+
