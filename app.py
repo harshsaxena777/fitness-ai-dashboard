@@ -1,7 +1,7 @@
 import streamlit as st
 import plotly.graph_objects as go
 
-# --- PAGE CONFIG ---
+# --- Page confi ---
 st.set_page_config(page_title="Fitness Stride Monitoring App", layout="centered")
 
 # --- Self Data  ---
@@ -171,4 +171,5 @@ elif menu == "Step Analytics":
             <div style="background:rgba(74, 222, 128, 0.2); padding:10px; border-radius:15px; color:#4ade80;">▲ 81%</div>
         </div>
     """, unsafe_allow_html=True)
+
 
