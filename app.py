@@ -1,139 +1,173 @@
 import streamlit as st
 import plotly.graph_objects as go
 import numpy as np
+import pandas as pd
+from datetime import datetime
 
-# --- Page Config ---
-st.set_page_config(page_title="AI Stride Hub", layout="centered")
+# --- M.Tech Research Configuration ---
+st.set_page_config(page_title="STRIDE-X | Biomechanical Twin", layout="wide")
 
-# --- Consolidated Styling ---
+# --- High-End CSS: Cyber-Research Aesthetic ---
 st.markdown("""
     <style>
-    @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;800&display=swap');
+    @import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@300;500&family=Outfit:wght@300;700;900&display=swap');
     
     .stApp {
-        background: linear-gradient(165deg, #1e1b4b 0%, #0f172a 100%);
-        font-family: 'Plus Jakarta Sans', sans-serif;
-        color: white;
+        background: #050505;
+        font-family: 'Outfit', sans-serif;
+        color: #e0e0e0;
+    }
+    
+    /* Terminal Effect */
+    .terminal-log {
+        background: rgba(0, 20, 0, 0.9);
+        border: 1px solid #00ff41;
+        color: #00ff41;
+        font-family: 'JetBrains Mono', monospace;
+        padding: 15px;
+        font-size: 0.75rem;
+        border-radius: 5px;
+        height: 150px;
+        overflow-y: hidden;
+        box-shadow: inset 0 0 10px #00ff4133;
     }
 
-    .glass-card {
-        background: rgba(255, 255, 255, 0.05);
-        backdrop-filter: blur(15px);
-        border: 1px solid rgba(255, 255, 255, 0.1);
-        border-radius: 24px;
+    /* Research Card */
+    .research-card {
+        background: linear-gradient(145deg, #111, #1a1a1a);
+        border-left: 4px solid #3b82f6;
         padding: 20px;
-        margin-bottom: 15px;
+        border-radius: 0 15px 15px 0;
+        margin-bottom: 20px;
     }
-    
-    .metric-value { font-size: 1.8rem; font-weight: 800; margin: 0; }
-    .metric-label { font-size: 0.8rem; opacity: 0.6; margin: 0; text-transform: uppercase; }
-    
-    .award-badge {
-        background: rgba(139, 92, 246, 0.2);
-        border: 2px solid #a78bfa;
-        border-radius: 15px;
-        width: 70px; height: 80px;
-        display: flex; flex-direction: column;
-        justify-content: center; align-items: center;
-        margin: 10px auto;
+
+    /* Data Glitch Highlight */
+    .glitch-text {
+        color: #3b82f6;
+        font-weight: 900;
+        text-transform: uppercase;
+        letter-spacing: 3px;
     }
-    .locked { opacity: 0.3; filter: grayscale(1); }
-    
-    .status-badge {
-        padding: 4px 12px;
-        border-radius: 50px;
-        font-size: 0.75rem;
-        font-weight: 600;
-        background: rgba(74, 222, 128, 0.2); color: #4ade80;
+
+    /* Floating Metrics */
+    .floater {
+        border: 1px solid rgba(255,255,255,0.1);
+        padding: 10px;
+        border-radius: 10px;
+        text-align: center;
+        background: rgba(255,255,255,0.02);
     }
     </style>
     """, unsafe_allow_html=True)
 
-# --- Data ---
-days = ["Fri", "Sat", "Sun", "Mon", "Tue", "Wed", "Thu"]
-activity_data = [8.2, 10.3, 4.5, 7.2, 9.1, 11.0, 10.3] # In k-steps
-current_steps = 10372
+# --- Header ---
+c1, c2 = st.columns([3, 1])
+with c1:
+    st.markdown("<h1 style='margin:0;'>STRIDE <span style='color:#3b82f6;'>X-1</span></h1>", unsafe_allow_html=True)
+    st.markdown("<p style='opacity:0.5; margin:0;'>NEURAL BIOMECHANICS & KINETIC TELEMETRY</p>", unsafe_allow_html=True)
+with c2:
+    st.markdown("<br><div style='text-align:right;'><span style='background:#f8717133; color:#f87171; padding:5px 15px; border-radius:20px; font-size:0.8rem;'>LIVE TELEMETRY: CONNECTED</span></div>", unsafe_allow_html=True)
 
-# --- Sidebar Navigation ---
-menu = st.sidebar.radio("Navigation", ["Dashboard", "Step Analytics", "Gait & AI Insights", "Awards"])
+st.markdown("---")
 
-if menu == "Dashboard":
-    st.markdown("### Daily Overview")
+# --- Layout: 3 Column Research View ---
+left_col, mid_col, right_col = st.columns([1, 2, 1])
+
+with left_col:
+    st.markdown("#### [01] BIOMETRIC VECTORS")
     
-    col1, col2 = st.columns(2)
-    with col1:
-        st.markdown(f"""
-            <div class="glass-card">
-                <p class="metric-label">💓 Heart Rate</p>
-                <p class="metric-value">72 <span style="font-size:1rem; color:#f87171;">bpm</span></p>
-                <span class="status-badge">Resting</span>
-            </div>
-        """, unsafe_allow_html=True)
-    with col2:
-        # Calorie math: ~0.04 calories per step
-        kcal = int(current_steps * 0.04)
-        st.markdown(f"""
-            <div class="glass-card">
-                <p class="metric-label">🔥 Burned</p>
-                <p class="metric-value">{kcal} <span style="font-size:1rem; color:#fbbf24;">kcal</span></p>
-                <span class="status-badge">Active</span>
-            </div>
-        """, unsafe_allow_html=True)
+    # Heart Rate with "Waveform" feel
+    st.markdown("""
+        <div class="research-card">
+            <small>HEART RATE VARIABILITY (HRV)</small>
+            <h2 style="color:#f87171; margin:0;">74.2 <span style="font-size:0.8rem;">ms</span></h2>
+            <div style="height:2px; background:rgba(248,113,113,0.3); width:80%;"></div>
+        </div>
+    """, unsafe_allow_html=True)
 
-    # Main Step Ring
+    # Calories - High precision
+    st.markdown("""
+        <div class="research-card" style="border-left-color: #fbbf24;">
+            <small>METABOLIC EXPENDITURE</small>
+            <h2 style="color:#fbbf24; margin:0;">412.08 <span style="font-size:0.8rem;">kcal</span></h2>
+            <p style="font-size:0.7rem; opacity:0.6;">Efficiency Index: 0.94 η</p>
+        </div>
+    """, unsafe_allow_html=True)
+    
+    # Step Analytics with Stride Length
+    st.markdown("""
+        <div class="research-card" style="border-left-color: #4ade80;">
+            <small>STRIDE MORPHOLOGY</small>
+            <h2 style="color:#4ade80; margin:0;">0.78 <span style="font-size:0.8rem;">m/step</span></h2>
+            <p style="font-size:0.7rem; opacity:0.6;">Anomalies Detected: 0.02%</p>
+        </div>
+    """, unsafe_allow_html=True)
+
+with mid_col:
+    st.markdown("#### [02] 3D KINETIC DIGITAL TWIN")
+    
+    # 3D Mesh / Scatter visualization of gait cycle
+    t = np.linspace(0, 2*np.pi, 100)
+    fig_3d = go.Figure(data=[go.Scatter3d(
+        x=np.cos(t), y=np.sin(t), z=t,
+        mode='lines',
+        line=dict(color='#3b82f6', width=10)
+    )])
+    fig_3d.update_layout(
+        margin=dict(l=0, r=0, b=0, t=0),
+        scene=dict(
+            xaxis=dict(visible=False),
+            yaxis=dict(visible=False),
+            zaxis=dict(visible=False),
+            bgcolor="rgba(0,0,0,0)"
+        ),
+        paper_bgcolor='rgba(0,0,0,0)',
+        height=400
+    )
+    st.plotly_chart(fig_3d, use_container_width=True)
+    
+    # Live Spectral Analysis (FFT)
+    st.markdown("#### GAIT FREQUENCY SPECTRUM (PSD)")
+    freq = np.linspace(0, 5, 100)
+    amp = np.exp(-freq) * np.random.normal(1, 0.05, 100)
+    fig_fft = go.Figure(go.Scatter(x=freq, y=amp, fill='tozeroy', line_color='#3b82f6'))
+    fig_fft.update_layout(paper_bgcolor='rgba(0,0,0,0)', plot_bgcolor='rgba(0,0,0,0)', 
+                          height=150, margin=dict(l=0,r=0,t=0,b=0),
+                          xaxis=dict(title="Frequency (Hz)", color="gray"), yaxis=dict(visible=False))
+    st.plotly_chart(fig_fft, use_container_width=True)
+
+with right_col:
+    st.markdown("#### [03] NEURAL LOGS")
+    
+    # Real-time Terminal Log
+    log_entries = [
+        f"[{datetime.now().strftime('%H:%M:%S')}] PACKET_RECIEVED: HEX_0x442",
+        f"[{datetime.now().strftime('%H:%M:%S')}] LSTM_INFERENCE: SYMMETRY_OK",
+        f"[{datetime.now().strftime('%H:%M:%S')}] CNN_FILTER: NOISE_REDUCED_12dB",
+        f"[{datetime.now().strftime('%H:%M:%S')}] IMU_AXIS: X:0.02, Y:0.88, Z:0.12",
+        f"[{datetime.now().strftime('%H:%M:%S')}] ANALYTICS: CALORIC_MODEL_STABLE"
+    ]
     st.markdown(f"""
-        <div style="border: 12px solid rgba(255,255,255,0.05); border-top: 12px solid #4ade80; border-radius: 50%; width: 200px; height: 200px; margin: 30px auto; display: flex; flex-direction: column; justify-content: center; align-items: center;">
-            <h1 style="margin:0;">{current_steps:,}</h1>
-            <p style="margin:0; opacity:0.6;">Steps Today</p>
+        <div class="terminal-log">
+            { "<br>".join(log_entries) }
+            <br> > SYSTEM_IDLE_LISTENING...
         </div>
     """, unsafe_allow_html=True)
-
-elif menu == "Step Analytics":
-    st.markdown("### Step Analytics")
     
-    # Monthly comparison card
+    st.markdown("<br>", unsafe_allow_html=True)
+    
+    # AI Confidence Gauge
+    st.markdown("#### INFERENCE CONFIDENCE")
     st.markdown("""
-        <div class="glass-card">
-            <div style="display:flex; justify-content:space-between;">
-                <div><p style="opacity:0.6; margin:0;">Target</p><h2 style="margin:0;">10.0k</h2></div>
-                <div style="text-align:right;"><p style="color:#4ade80; margin:0;">Average</p><h2 style="color:#4ade80; margin:0;">8.6k</h2></div>
-            </div>
+        <div class="floater">
+            <h1 style="color:#3b82f6; margin:0;">99.4%</h1>
+            <small>MODEL RELIABILITY INDEX</small>
         </div>
     """, unsafe_allow_html=True)
-    
-    fig = go.Figure(go.Scatter(x=days, y=activity_data, mode='lines+markers', 
-                               line=dict(color='#4ade80', width=4, shape='spline'), 
-                               fill='tozeroy', fillcolor='rgba(74, 222, 128, 0.1)'))
-    fig.update_layout(paper_bgcolor='rgba(0,0,0,0)', plot_bgcolor='rgba(0,0,0,0)', 
-                      xaxis=dict(showgrid=False, color="white"), yaxis=dict(visible=False), height=250)
-    st.plotly_chart(fig, use_container_width=True)
 
-elif menu == "Gait & AI Insights":
-    st.markdown("### 🤖 Stride Intelligence")
-    st.markdown("""
-        <div class="glass-card" style="border-left: 5px solid #8b5cf6;">
-            <p style="margin:0; font-weight:600; color:#a78bfa;">AI ANALYSIS</p>
-            <p style="margin:0; font-size:0.9rem; opacity:0.8;">Your symmetry is at 94%. Slight left-leaning detected during the last 2km.</p>
-        </div>
-    """, unsafe_allow_html=True)
-    
-    # Radar Chart for Gait
-    categories = ['Symmetry', 'Balance', 'Impact', 'Tempo', 'Posture']
-    fig_radar = go.Figure(go.Scatterpolar(r=[94, 88, 70, 91, 85], theta=categories, fill='toself', line_color='#8b5cf6'))
-    fig_radar.update_layout(polar=dict(radialaxis=dict(visible=False), bgcolor="rgba(0,0,0,0)"), 
-                            paper_bgcolor='rgba(0,0,0,0)', font=dict(color="white"), height=300)
-    st.plotly_chart(fig_radar, use_container_width=True)
-
-elif menu == "Awards":
-    st.markdown("### Achievements")
-    award_type = st.tabs(["Steps", "Streaks"])
-    
-    with award_type[0]:
-        vals = ["10k", "50k", "100k", "250k", "500k", "1M"]
-        unlocked = ["10k", "50k"]
-        for row in range(0, 6, 3):
-            cols = st.columns(3)
-            for i in range(3):
-                v = vals[row+i]
-                status = "" if v in unlocked else "locked"
-                cols[i].markdown(f'<div class="award-badge {status}"><b>{v[:-1]}</b><br><small>{v[-1]}</small></div><p style="text-align:center; font-size:0.7rem;">{v}</p>', unsafe_allow_html=True)
+# --- Footer System Status ---
+st.markdown("---")
+cols = st.columns(6)
+status_labels = ["GPS: LOCK", "IMU: ACTIVE", "BTLE: 4.2", "MEM: 12GB", "LAT: 12ms", "VER: 2.04-STABLE"]
+for i, status in enumerate(status_labels):
+    cols[i].markdown(f"<small style='opacity:0.4;'>{status}</small>", unsafe_allow_html=True)
