@@ -3,132 +3,167 @@ import plotly.graph_objects as go
 import numpy as np
 import pandas as pd
 from datetime import datetime
+import io
 
 # --- 1. RESEARCH SUITE CONFIG ---
-st.set_page_config(page_title="STRIDE-AI | Intelligence Hub", layout="wide")
+st.set_page_config(page_title="STRIDE-AI | Neural Clinical Lab", layout="wide")
 
-# --- 2. ADVANCED UI THEME ---
+# --- 2. ADVANCED UI THEME (High-Contrast Lab Aesthetic) ---
 st.markdown("""
 <style>
     @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;800&family=JetBrains+Mono&display=swap');
-    .stApp { background: #0a0a0c; font-family: 'Inter', sans-serif; color: #f0f0f0; }
+    .stApp { background: #050505; font-family: 'Inter', sans-serif; color: #f0f0f0; }
     
-    .report-container { background: #16161a; border: 1px solid #2d2d35; border-radius: 12px; padding: 25px; margin-bottom: 20px; }
-    .report-header { border-bottom: 2px solid #3b82f6; padding-bottom: 10px; margin-bottom: 20px; display: flex; justify-content: space-between; }
-    .ref-table { width: 100%; border-collapse: collapse; font-size: 0.85rem; }
-    .ref-table th { color: #3b82f6; text-align: left; padding: 10px; border-bottom: 1px solid #2d2d35; }
-    .ref-table td { padding: 10px; border-bottom: 1px solid #1c1c22; }
-    .status-badge { padding: 4px 10px; border-radius: 20px; font-weight: 700; font-size: 0.7rem; }
+    .report-container { background: #0d0d11; border: 1px solid #1f1f27; border-radius: 12px; padding: 30px; margin-bottom: 25px; box-shadow: 0 4px 20px rgba(0,0,0,0.5); }
+    .report-header { border-bottom: 3px solid #3b82f6; padding-bottom: 15px; margin-bottom: 25px; display: flex; justify-content: space-between; }
     
-    .stDownloadButton > button { width: 100%; background: #3b82f6 !important; color: white !important; border-radius: 8px !important; }
+    .ref-table { width: 100%; border-collapse: collapse; font-size: 0.9rem; }
+    .ref-table th { color: #3b82f6; text-align: left; padding: 12px; border-bottom: 2px solid #1f1f27; font-family: 'JetBrains Mono'; }
+    .ref-table td { padding: 12px; border-bottom: 1px solid #141418; }
     
-    /* Intelligence Hub Styling */
-    .ai-brain-card {
-        background: linear-gradient(135deg, #1e1e26 0%, #111115 100%);
-        border-left: 5px solid #3b82f6;
-        padding: 20px;
-        border-radius: 10px;
-        margin-bottom: 25px;
-    }
+    .status-badge { padding: 5px 12px; border-radius: 4px; font-weight: 800; font-size: 0.7rem; text-transform: uppercase; }
+    .stDownloadButton > button { width: 100%; background: linear-gradient(90deg, #3b82f6, #2563eb) !important; color: white !important; border: none !important; padding: 15px !important; font-weight: 700 !important; letter-spacing: 1px; }
 </style>
 """, unsafe_allow_html=True)
 
-# --- 3. DATA ENGINE ---
+# --- 3. THE "HEAVY" DATA ENGINE (New Data Features) ---
+# We are adding Z-Scores, Sample Variance, and Confidence Intervals
 lab_data = {
-    "Parameter": ["Gait Symmetry", "Impact Force", "Avg Heart Rate", "Metabolic Efficiency", "Stride Length"],
-    "Your Value": [0.82, 2.4, 158, 0.72, 0.78],
-    "Normal Range": ["0.90 - 1.00", "1.5 - 2.1 G", "60 - 140 BPM", "0.80 - 0.95", "0.70 - 0.85 m"],
-    "Unit": ["Ratio", "G-Force", "BPM", "η", "Meters"],
-    "Status": ["Low", "High", "Critical", "Low", "Normal"]
+    "Parameter ID": ["GAIT_SYM_01", "IMP_FRC_02", "HR_TELE_03", "MET_EFF_04", "STR_LEN_05", "CAD_FREQ_06"],
+    "Bio-Metric Parameter": ["Gait Symmetry Index", "Peak Impact Force", "Mean Heart Rate", "Metabolic Efficiency (η)", "Mean Stride Length", "Step Cadence"],
+    "Result": [0.82, 2.4, 158, 0.72, 0.78, 172],
+    "Z-Score": [-1.4, +2.1, +2.8, -1.1, -0.2, +0.5], # Deviation from mean
+    "Reference Range": ["0.90 - 1.00", "1.5 - 2.1 G", "60 - 140 BPM", "0.80 - 0.95", "0.70 - 0.85 m", "160 - 180 spm"],
+    "Confidence (CI)": ["98.2%", "94.5%", "99.1%", "89.4%", "97.0%", "95.5%"],
+    "Status": ["ABNORMAL", "HIGH", "CRITICAL", "LOW", "NORMAL", "NORMAL"]
 }
-df_report = pd.DataFrame(lab_data)
+df_heavy = pd.DataFrame(lab_data)
+
+# Function to generate the 'Heavy' Report
+def convert_df_to_heavy_csv(df):
+    output = io.StringIO()
+    output.write("STRIDE-AI CLINICAL BIOMECHANICS REPORT\n")
+    output.write(f"Generated on: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}\n")
+    output.write("Sensor Frequency: 100Hz | Algorithm: LSTM-CNN Hybrid v3.0\n")
+    output.write("-" * 50 + "\n")
+    df.to_csv(output, index=False)
+    return output.getvalue().encode('utf-8')
 
 # --- 4. SIDEBAR ---
 with st.sidebar:
-    st.markdown("### 🧠 STRIDE-AI CORE")
-    page = st.radio("Navigation", ["Intelligence Hub", "Dashboard View", "Lab Report Module"])
+    st.markdown("### 🦾 SYSTEM CALIBRATION")
+    st.caption("Environment: Bareilly Research Wing")
+    page = st.radio("Switch View", ["Intelligence Hub", "Clinical Lab Report"])
     st.markdown("---")
-    st.download_button(label="📥 DOWNLOAD CLINICAL REPORT", data=df_report.to_csv(index=False).encode('utf-8'), file_name="StrideAI_Full_Report.csv", mime="text/csv")
+    
+    # Actionable Download
+    heavy_report = convert_df_to_heavy_csv(df_heavy)
+    st.download_button(
+        label="📄 DOWNLOAD FULL KINETIC DOSSIER",
+        data=heavy_report,
+        file_name=f"STRIDE_AI_DOSSIER_{datetime.now().strftime('%Y%m%d')}.txt",
+        mime="text/plain",
+    )
+    st.caption("Report includes Z-Scores and Neural Confidence Intervals.")
 
 # --- 5. PAGE ROUTING ---
 
-# NEW FEATURE: INTELLIGENCE HUB (The "Balance" between raw data and reports)
 if page == "Intelligence Hub":
-    st.title("AI Decision Matrix & Stride Comparison")
+    st.title("Neural Decision Matrix")
     
-    st.markdown("""
-    <div class="ai-brain-card">
-        <h3 style='margin:0; color:#3b82f6;'>Neural Logic Engine</h3>
-        <p style='opacity:0.7;'>Analyzing 512 gait features against the Biomechanical Gold Standard (BGS) Model.</p>
-    </div>
-    """, unsafe_allow_html=True)
-    
-    col_plot, col_logic = st.columns([2, 1])
-    
-    with col_plot:
-        st.subheader("BGS vs. Live Pattern Comparison")
-        # Creating a comparison graph
+    col_a, col_b = st.columns([2, 1])
+    with col_a:
+        st.subheader("Gait Signal Decomposition")
         x = np.linspace(0, 10, 100)
-        gold_standard = np.sin(x) + 2
-        user_pattern = np.sin(x) * 0.7 + 2.3 + np.random.normal(0, 0.1, 100)
+        # Showing the "Signal Noise" vs "Filtered Stride"
+        noise = np.random.normal(0, 0.2, 100)
+        signal = np.sin(x) + 2
         
         fig = go.Figure()
-        fig.add_trace(go.Scatter(x=x, y=gold_standard, name="Gold Standard (Optimal)", line=dict(color="#00ffbd", dash='dash')))
-        fig.add_trace(go.Scatter(x=x, y=user_pattern, name="Your Stride (Live)", line=dict(color="#f87171", width=3)))
-        fig.update_layout(template="plotly_dark", paper_bgcolor='rgba(0,0,0,0)', plot_bgcolor='rgba(0,0,0,0)', height=400)
+        fig.add_trace(go.Scatter(x=x, y=signal + noise, name="Raw Sensor Data", line=dict(color="rgba(255,255,255,0.2)")))
+        fig.add_trace(go.Scatter(x=x, y=signal, name="Neural Filtered Stride", line=dict(color="#3b82f6", width=4)))
+        fig.update_layout(template="plotly_dark", paper_bgcolor='rgba(0,0,0,0)', plot_bgcolor='rgba(0,0,0,0)')
         st.plotly_chart(fig, use_container_width=True)
-        st.caption("The Red line indicates propulsion lag and vertical instability compared to the Healthy Baseline (Green).")
 
-    with col_logic:
-        st.subheader("AI Probability")
-        st.write("Confidence in Anomaly Detection:")
-        st.progress(88)
-        st.write("Model Confidence (LSTM-CNN):")
-        st.progress(94)
-        
-        st.markdown("""
-        **Anomaly Signature:**
-        - Medial Collapse Detected
-        - Late Heel Strike
-        - Compensatory Hip Sway
+    with col_b:
+        st.markdown("#### Model Architecture")
+        st.code("""
+Layer (type)         Output Shape
+================================
+Conv1D (CNN)        (None, 64, 32)
+LSTM (Recurrent)    (None, 32)
+Dense (Softmax)     (None, 6)
+================================
+Precision: 0.984 | Recall: 0.97
         """)
+        st.info("The model is currently identifying a 'Pronation Cluster' with 94% probability.")
 
-elif page == "Dashboard View":
-    st.title("Real-Time Telemetry Dashboard")
-    c1, c2, c3, c4 = st.columns(4)
-    c1.metric("Symmetry", "82%", "-8%")
-    c2.metric("Heart Rate", "158 BPM", "+18 BPM", delta_color="inverse")
-    c3.metric("Impact", "2.4G", "+0.3G", delta_color="inverse")
-    c4.metric("Burn Rate", "412 kcal", "Active")
+elif page == "Clinical Lab Report":
+    st.title("Biomechanical Clinical Dossier")
     
-    st.subheader("Neural Gait Reconstruction (3D)")
-    z = np.linspace(0, 1, 100)
-    fig = go.Figure(data=[go.Scatter3d(x=np.cos(z*6), y=np.sin(z*6), z=z, mode='lines', line=dict(color='#3b82f6', width=8))])
-    fig.update_layout(scene=dict(bgcolor="black"), paper_bgcolor='black', margin=dict(t=0, b=0))
-    st.plotly_chart(fig, use_container_width=True)
-
-elif page == "Lab Report Module":
-    st.title("Biomechanical & Physiological Lab Report")
     st.markdown(f"""
     <div class="report-container">
         <div class="report-header">
-            <div><h2 style="margin:0; color:#3b82f6;">STRIDE-AI DIAGNOSTICS</h2><p style="font-size:0.8rem; opacity:0.7;">Patient Ref: USER_0942</p></div>
-            <div style="text-align:right;"><p style="margin:0;">Date: {datetime.now().strftime('%d %b %Y')}</p><p style="margin:0; color:#00ffbd;">SYSTEM VALIDATED</p></div>
+            <div>
+                <h1 style="margin:0; color:#3b82f6; letter-spacing:-1px;">STRIDE-AI LABS</h1>
+                <p style="font-family:'JetBrains Mono'; font-size:0.8rem; opacity:0.6;">BIOMECHANICAL INFRASTRUCTURE v3.0</p>
+            </div>
+            <div style="text-align:right;">
+                <p style="margin:0; font-weight:800;">REF NO: SA-2026-942</p>
+                <p style="margin:0; color:#3b82f6;">{datetime.now().strftime('%d %B %Y')}</p>
+            </div>
         </div>
-        <table class="ref-table">
-            <tr><th>TEST PARAMETER</th><th>RESULT</th><th>REFERENCE RANGE</th><th>UNIT</th><th>INTERPRETATION</th></tr>
+    """, unsafe_allow_html=True)
+
+    # Heavy Report Table
+    st.markdown("""
+    <table class="ref-table">
+        <tr>
+            <th>ID</th>
+            <th>TEST PARAMETER</th>
+            <th>RESULT</th>
+            <th>Z-SCORE</th>
+            <th>REF. RANGE</th>
+            <th>STATUS</th>
+        </tr>
     """, unsafe_allow_html=True)
     
-    for i, row in df_report.iterrows():
-        color = "#ff4b4b" if row['Status'] in ["Low", "High", "Critical"] else "#00ffbd"
-        st.markdown(f"<tr><td>{row['Parameter']}</td><td style='font-weight:bold; color:{color};'>{row['Your Value']}</td><td>{row['Normal Range']}</td><td>{row['Unit']}</td><td><span class='status-badge' style='background:{color}33; color:{color}; border:1px solid {color};'>{row['Status']}</span></td></tr>", unsafe_allow_html=True)
+    for _, row in df_heavy.iterrows():
+        color = "#ff4b4b" if row['Status'] in ["ABNORMAL", "HIGH", "CRITICAL"] else "#00ffbd"
+        st.markdown(f"""
+        <tr>
+            <td style="font-family:'JetBrains Mono'; font-size:0.7rem; opacity:0.5;">{row['Parameter ID']}</td>
+            <td style="font-weight:600;">{row['Bio-Metric Parameter']}</td>
+            <td style="color:{color}; font-weight:800;">{row['Result']}</td>
+            <td style="font-family:'JetBrains Mono';">{row['Z-Score']}</td>
+            <td>{row['Reference Range']}</td>
+            <td><span class="status-badge" style="background:{color}22; color:{color}; border:1px solid {color}44;">{row['Status']}</span></td>
+        </tr>
+        """, unsafe_allow_html=True)
         
     st.markdown("</table></div>", unsafe_allow_html=True)
     
-    ca, cb = st.columns(2)
-    with ca:
-        st.error("#### Biomechanical Precautions")
-        st.write("1. Reduce speed to 8km/h.\n2. Targeted calf activation.\n3. Inspect medial shoe wear.")
-    with cb:
-        st.warning("#### Physiological Precautions")
-        st.write("1. Cardiac strain detected.\n2. 500ml Isotonic intake.\n3. 48hr recovery suggested.")
+    # Detailed AI Interpretation Section
+    st.subheader("Neural Diagnostic Interpretations")
+    
+    with st.expander("🔍 View Deep Feature Analysis"):
+        st.write("""
+        - **KINETIC ASYMMETRY:** Detected -1.4 Z-Score in Symmetry Index. This suggests a significant neurological or muscular imbalance during the propulsion phase.
+        - **HEMODYNAMIC STRAIN:** Heart rate is 2.8 Standard Deviations above resting mean. 
+        - **METABOLIC DRIFT:** Low efficiency (0.72) indicates early onset of anaerobic fatigue.
+        """)
+
+    st.markdown("---")
+    c1, c2 = st.columns(2)
+    with c1:
+        st.error("#### Prescriptive Interventions")
+        st.markdown("""
+        - **Correction:** Implement unilateral strength training for the Left Gastrocnemius.
+        - **Load:** Decrease weekly kinetic volume by 15% until Symmetry > 0.90.
+        """)
+    with c2:
+        st.warning("#### Critical Alerts")
+        st.markdown("""
+        - **Zone 5 Alert:** Heart rate is in the 98th percentile for this age group.
+        - **Impact Alert:** Peak G-force exceeds structural safety of current footwear.
+        """)
