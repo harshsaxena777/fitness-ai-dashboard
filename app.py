@@ -65,7 +65,7 @@ st.markdown("""
 # --- SIDEBAR NAVIGATION ---
 with st.sidebar:
     st.markdown("<h1 style='color:#00f2ff; font-weight:900;'>STRIDE-AI</h1>", unsafe_allow_html=True)
-    st.markdown("<p style='font-family:"JetBrains Mono"; font-size:0.7rem; opacity:0.6;'>SYSTEM CORE v3.0</p>", unsafe_allow_html=True)
+   st.markdown("<p style='font-family:\"JetBrains Mono\"; font-size:0.7rem; opacity:0.6;'>SYSTEM CORE v3.0</p>", unsafe_allow_html=True)
     page = st.radio("RESEARCH MODULES", ["Kinetics", "Metabolics", "Neural Motion", "Hemodynamics"])
     st.markdown("---")
     st.markdown("<p style='font-size:0.8rem;'><span class='live-dot'></span> TELEMETRY: ACTIVE</p>", unsafe_allow_html=True)
