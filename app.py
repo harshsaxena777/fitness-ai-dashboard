@@ -1,114 +1,72 @@
-import streamlit as st
-import plotly.graph_objects as go
-import numpy as np
-import pandas as pd
-from datetime import datetime
+# Add this logic to your "Neural Motion" page or as a new page called "AI Validation"
 
-# --- PG RESEARCH SUITE: CORE CONFIGURATION ---
-st.set_page_config(page_title="STRIDE-AI | Research Suite", layout="wide")
-
-# --- GLOBAL CSS: RESEARCH LAB AESTHETIC ---
-st.markdown("""
-<style>
-    @import url('https://fonts.googleapis.com/css2?family=Outfit:wght@300;700;900&family=JetBrains+Mono:wght@400&display=swap');
-
-    .stApp {
-        background: radial-gradient(circle at 50% 50%, #101014 0%, #050505 100%);
-        font-family: 'Outfit', sans-serif;
-        color: #e0e0e0;
-    }
-
-    /* Professional Sidebar */
-    [data-testid="stSidebar"] {
-        background-color: #0a0a0c !important;
-        border-right: 1px solid rgba(0, 242, 255, 0.2);
-    }
-
-    /* Research Card Styling */
-    .research-card {
-        background: rgba(255, 255, 255, 0.03);
-        backdrop-filter: blur(10px);
-        border: 1px solid rgba(255, 255, 255, 0.1);
-        border-radius: 20px;
-        padding: 24px;
-        margin-bottom: 20px;
-    }
-
-    .stat-label {
-        font-family: 'JetBrains Mono', monospace;
-        font-size: 0.75rem;
-        color: #00f2ff;
-        letter-spacing: 2px;
-        text-transform: uppercase;
-    }
-
-    .stat-value {
-        font-size: 2.8rem;
-        font-weight: 900;
-        margin: 0;
-        background: linear-gradient(90deg, #fff, #00f2ff);
-        -webkit-background-clip: text;
-        -webkit-text-fill-color: transparent;
-    }
-
-    @keyframes pulse {
-        0% { opacity: 0.4; } 50% { opacity: 1; } 100% { opacity: 0.4; }
-    }
-    .live-dot {
-        height: 10px; width: 10px; background-color: #ff4b4b; border-radius: 50%;
-        display: inline-block; margin-right: 8px; box-shadow: 0 0 10px #ff4b4b;
-        animation: pulse 1.5s infinite;
-    }
-</style>
-""", unsafe_allow_html=True)
-
-# --- SIDEBAR NAVIGATION ---
-with st.sidebar:
-    st.markdown("<h1 style='color:#00f2ff; font-weight:900;'>STRIDE-AI</h1>", unsafe_allow_html=True)
-    st.markdown("<p style='font-family:\"JetBrains Mono\"; font-size:0.7rem; opacity:0.6;'>SYSTEM CORE v3.0</p>", unsafe_allow_html=True)
-    page = st.radio("RESEARCH MODULES", ["Kinetics", "Metabolics", "Neural Motion", "Hemodynamics"])
-    st.markdown("---")
-    st.markdown("<p style='font-size:0.8rem;'><span class='live-dot'></span> TELEMETRY: ACTIVE</p>", unsafe_allow_html=True)
-
-# --- LOGIC: MULTI-PAGE ROUTING ---
-if page == "Kinetics":
-    st.title("Step Analytics & Kinetic Load")
-    c1, c2, c3 = st.columns(3)
-    c1.markdown('<div class="research-card"><p class="stat-label">Total Volume</p><p class="stat-value">10,372</p></div>', unsafe_allow_html=True)
-    c2.markdown('<div class="research-card"><p class="stat-label">Velocity</p><p class="stat-value">1.4 <small style="-webkit-text-fill-color: white;">m/s</small></p></div>', unsafe_allow_html=True)
-    c3.markdown('<div class="research-card"><p class="stat-label">Compliance</p><p class="stat-value">92<small style="-webkit-text-fill-color: white;">%</small></p></div>', unsafe_allow_html=True)
+elif page == "[NEURAL] Motion & Stride":
+    st.title("Neural Stride Morphology & Clinical Validation")
     
-    t = np.linspace(0, 24, 100)
-    y = np.abs(np.sin(t/4) * 500 + np.random.normal(0, 50, 100))
-    fig = go.Figure(go.Scatter(x=t, y=y, fill='tozeroy', line_color='#00f2ff'))
-    fig.update_layout(template="plotly_dark", paper_bgcolor='rgba(0,0,0,0)', plot_bgcolor='rgba(0,0,0,0)')
-    st.plotly_chart(fig, use_container_width=True)
+    # --- Part 1: Real-time Validation Logic (The "M.Tech" Brain) ---
+    # In a real app, these values would come from your LSTM model variables
+    gait_symmetry = 0.82  # Example: 1.0 is perfect
+    impact_force = 2.4    # G-force
+    stride_variability = 0.15 
+    
+    st.markdown("### 🤖 AI Validation Report")
+    
+    # Logic for Prescription
+    if gait_symmetry < 0.85:
+        status = "⚠️ ANOMALY DETECTED"
+        color = "#f87171"
+        prescription = "High risk of unilateral joint fatigue. Your left-side propulsion is 18% weaker than the right."
+        precautions = [
+            "Reduce treadmill incline to 0% immediately.",
+            "Focus on single-leg stability exercises (Bulgarian Split Squats).",
+            "Consult a physiotherapist if 'lateral hip pain' persists."
+        ]
+    elif impact_force > 2.0:
+        status = "🚩 HIGH IMPACT WARNING"
+        color = "#fbbf24"
+        prescription = "Vertical oscillation is exceeding safe thresholds for knee cartilage."
+        precautions = [
+            "Shorten your stride length by 10% to land under your center of mass.",
+            "Increase step cadence (RPM) to reduce ground contact time.",
+            "Ensure footwear has adequate mid-sole cushioning (check for foam compression)."
+        ]
+    else:
+        status = "✅ MOTION VALIDATED"
+        color = "#00ffbd"
+        prescription = "Gait morphology is within optimal biomechanical parameters."
+        precautions = ["Maintain current tempo.", "Ideal for high-intensity interval training (HIIT)."]
 
-elif page == "Metabolics":
-    st.title("Metabolic Expenditure Analysis")
-    col_l, col_r = st.columns([1, 2])
-    with col_l:
-        st.markdown('<div class="research-card"><p class="stat-label">Session Burn</p><p class="stat-value" style="background: linear-gradient(90deg, #fff, #ffcc00); -webkit-background-clip: text; -webkit-text-fill-color: transparent;">412.08</p><p>kcal</p></div>', unsafe_allow_html=True)
-    with col_r:
-        fig = go.Figure(data=[go.Pie(labels=['Carbs', 'Lipids'], values=[70, 30], hole=.6, marker_colors=['#ffcc00', '#555'])])
-        fig.update_layout(template="plotly_dark", paper_bgcolor='rgba(0,0,0,0)')
-        st.plotly_chart(fig, use_container_width=True)
+    # --- UI Layout for the AI Brain ---
+    col_status, col_presc = st.columns([1, 2])
+    
+    with col_status:
+        st.markdown(f"""
+            <div style="background:{color}22; border: 2px solid {color}; border-radius:15px; padding:20px; text-align:center;">
+                <p style="color:{color}; font-weight:900; margin:0;">{status}</p>
+                <h1 style="margin:0; color:white;">{int(gait_symmetry*100)}%</h1>
+                <small>VALDIATION SCORE</small>
+            </div>
+        """, unsafe_allow_html=True)
 
-elif page == "Neural Motion":
-    st.title("LSTM Stride Morphology (3D)")
-    z = np.linspace(0, 1, 100)
-    fig = go.Figure(data=[go.Scatter3d(x=np.cos(z*6), y=np.sin(z*6), z=z, mode='lines', line=dict(color='#7000ff', width=10))])
-    fig.update_layout(scene=dict(bgcolor="black"), paper_bgcolor='black', height=600)
-    st.plotly_chart(fig, use_container_width=True)
+    with col_presc:
+        st.markdown(f"#### AI Diagnostic: <span style='color:{color};'>{status}</span>", unsafe_allow_html=True)
+        st.write(prescription)
+        
+    st.markdown("---")
+    st.markdown("#### Recommended Precautions")
+    for note in precautions:
+        st.markdown(f"* {note}")
 
-elif page == "Hemodynamics":
-    st.title("Cardiovascular Telemetry")
-    m1, m2 = st.columns([1, 2])
-    with m1:
-        st.markdown('<div class="research-card"><p class="stat-label">BPM</p><p class="stat-value" style="background: linear-gradient(90deg, #fff, #ff4b4b); -webkit-background-clip: text; -webkit-text-fill-color: transparent;">74</p></div>', unsafe_allow_html=True)
-    with m2:
-        x = np.linspace(0, 2, 500)
-        y = np.sin(20*x) * np.exp(-x) 
-        fig = go.Figure(go.Scatter(x=x, y=y, line_color='#ff4b4b'))
-        fig.update_layout(template="plotly_dark", paper_bgcolor='rgba(0,0,0,0)', plot_bgcolor='rgba(0,0,0,0)')
-        st.plotly_chart(fig, use_container_width=True)
+    # --- Part 2: Visualizing the Anomaly (The "Evidence") ---
+    st.markdown("#### Deviation Analysis")
+    # Show where the user is deviating from the 'Normal' gait curve
+    x = np.linspace(0, 1, 100)
+    normal_gait = np.sin(x * np.pi) 
+    user_gait = np.sin(x * np.pi) * 0.8 + np.random.normal(0, 0.05, 100) # Simulating a weak stride
+    
+    fig_dev = go.Figure()
+    fig_dev.add_trace(go.Scatter(x=x, y=normal_gait, name="Baseline (Healthy)", line=dict(dash='dash', color='gray')))
+    fig_dev.add_trace(go.Scatter(x=x, y=user_gait, name="Your Stride", line=dict(color=color, width=3)))
+    
+    fig_dev.update_layout(paper_bgcolor='rgba(0,0,0,0)', plot_bgcolor='rgba(0,0,0,0)', height=300)
+    st.plotly_chart(fig_dev, use_container_width=True)
