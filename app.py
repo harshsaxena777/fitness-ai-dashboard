@@ -4,170 +4,111 @@ import numpy as np
 import pandas as pd
 from datetime import datetime
 
-# --- M.Tech Research Configuration ---
-st.set_page_config(page_title="STRIDE-X | Biomechanical Twin", layout="wide")
+# --- PG RESEARCH SUITE: CORE CONFIGURATION ---
+st.set_page_config(page_title="STRIDE-AI | Research Suite", layout="wide")
 
-# --- High-End CSS: Cyber-Research Aesthetic ---
+# --- GLOBAL CSS: RESEARCH LAB AESTHETIC ---
 st.markdown("""
-    <style>
-    @import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@300;500&family=Outfit:wght@300;700;900&display=swap');
-    
+<style>
+    @import url('https://fonts.googleapis.com/css2?family=Outfit:wght@300;700;900&family=JetBrains+Mono:wght@400&display=swap');
+
     .stApp {
-        background: #050505;
+        background: radial-gradient(circle at 50% 50%, #101014 0%, #050505 100%);
         font-family: 'Outfit', sans-serif;
         color: #e0e0e0;
     }
-    
-    /* Terminal Effect */
-    .terminal-log {
-        background: rgba(0, 20, 0, 0.9);
-        border: 1px solid #00ff41;
-        color: #00ff41;
-        font-family: 'JetBrains Mono', monospace;
-        padding: 15px;
-        font-size: 0.75rem;
-        border-radius: 5px;
-        height: 150px;
-        overflow-y: hidden;
-        box-shadow: inset 0 0 10px #00ff4133;
+
+    /* Professional Sidebar */
+    [data-testid="stSidebar"] {
+        background-color: #0a0a0c !important;
+        border-right: 1px solid rgba(0, 242, 255, 0.2);
     }
 
-    /* Research Card */
+    /* Research Card Styling */
     .research-card {
-        background: linear-gradient(145deg, #111, #1a1a1a);
-        border-left: 4px solid #3b82f6;
-        padding: 20px;
-        border-radius: 0 15px 15px 0;
+        background: rgba(255, 255, 255, 0.03);
+        backdrop-filter: blur(10px);
+        border: 1px solid rgba(255, 255, 255, 0.1);
+        border-radius: 20px;
+        padding: 24px;
         margin-bottom: 20px;
     }
 
-    /* Data Glitch Highlight */
-    .glitch-text {
-        color: #3b82f6;
-        font-weight: 900;
+    .stat-label {
+        font-family: 'JetBrains Mono', monospace;
+        font-size: 0.75rem;
+        color: #00f2ff;
+        letter-spacing: 2px;
         text-transform: uppercase;
-        letter-spacing: 3px;
     }
 
-    /* Floating Metrics */
-    .floater {
-        border: 1px solid rgba(255,255,255,0.1);
-        padding: 10px;
-        border-radius: 10px;
-        text-align: center;
-        background: rgba(255,255,255,0.02);
+    .stat-value {
+        font-size: 2.8rem;
+        font-weight: 900;
+        margin: 0;
+        background: linear-gradient(90deg, #fff, #00f2ff);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
     }
-    </style>
-    """, unsafe_allow_html=True)
 
-# --- Header ---
-c1, c2 = st.columns([3, 1])
-with c1:
-    st.markdown("<h1 style='margin:0;'>STRIDE <span style='color:#3b82f6;'>X-1</span></h1>", unsafe_allow_html=True)
-    st.markdown("<p style='opacity:0.5; margin:0;'>NEURAL BIOMECHANICS & KINETIC TELEMETRY</p>", unsafe_allow_html=True)
-with c2:
-    st.markdown("<br><div style='text-align:right;'><span style='background:#f8717133; color:#f87171; padding:5px 15px; border-radius:20px; font-size:0.8rem;'>LIVE TELEMETRY: CONNECTED</span></div>", unsafe_allow_html=True)
+    @keyframes pulse {
+        0% { opacity: 0.4; } 50% { opacity: 1; } 100% { opacity: 0.4; }
+    }
+    .live-dot {
+        height: 10px; width: 10px; background-color: #ff4b4b; border-radius: 50%;
+        display: inline-block; margin-right: 8px; box-shadow: 0 0 10px #ff4b4b;
+        animation: pulse 1.5s infinite;
+    }
+</style>
+""", unsafe_allow_html=True)
 
-st.markdown("---")
+# --- SIDEBAR NAVIGATION ---
+with st.sidebar:
+    st.markdown("<h1 style='color:#00f2ff; font-weight:900;'>STRIDE-AI</h1>", unsafe_allow_html=True)
+    st.markdown("<p style='font-family:"JetBrains Mono"; font-size:0.7rem; opacity:0.6;'>SYSTEM CORE v3.0</p>", unsafe_allow_html=True)
+    page = st.radio("RESEARCH MODULES", ["Kinetics", "Metabolics", "Neural Motion", "Hemodynamics"])
+    st.markdown("---")
+    st.markdown("<p style='font-size:0.8rem;'><span class='live-dot'></span> TELEMETRY: ACTIVE</p>", unsafe_allow_html=True)
 
-# --- Layout: 3 Column Research View ---
-left_col, mid_col, right_col = st.columns([1, 2, 1])
-
-with left_col:
-    st.markdown("#### [01] BIOMETRIC VECTORS")
+# --- LOGIC: MULTI-PAGE ROUTING ---
+if page == "Kinetics":
+    st.title("Step Analytics & Kinetic Load")
+    c1, c2, c3 = st.columns(3)
+    c1.markdown('<div class="research-card"><p class="stat-label">Total Volume</p><p class="stat-value">10,372</p></div>', unsafe_allow_html=True)
+    c2.markdown('<div class="research-card"><p class="stat-label">Velocity</p><p class="stat-value">1.4 <small style="-webkit-text-fill-color: white;">m/s</small></p></div>', unsafe_allow_html=True)
+    c3.markdown('<div class="research-card"><p class="stat-label">Compliance</p><p class="stat-value">92<small style="-webkit-text-fill-color: white;">%</small></p></div>', unsafe_allow_html=True)
     
-    # Heart Rate with "Waveform" feel
-    st.markdown("""
-        <div class="research-card">
-            <small>HEART RATE VARIABILITY (HRV)</small>
-            <h2 style="color:#f87171; margin:0;">74.2 <span style="font-size:0.8rem;">ms</span></h2>
-            <div style="height:2px; background:rgba(248,113,113,0.3); width:80%;"></div>
-        </div>
-    """, unsafe_allow_html=True)
+    t = np.linspace(0, 24, 100)
+    y = np.abs(np.sin(t/4) * 500 + np.random.normal(0, 50, 100))
+    fig = go.Figure(go.Scatter(x=t, y=y, fill='tozeroy', line_color='#00f2ff'))
+    fig.update_layout(template="plotly_dark", paper_bgcolor='rgba(0,0,0,0)', plot_bgcolor='rgba(0,0,0,0)')
+    st.plotly_chart(fig, use_container_width=True)
 
-    # Calories - High precision
-    st.markdown("""
-        <div class="research-card" style="border-left-color: #fbbf24;">
-            <small>METABOLIC EXPENDITURE</small>
-            <h2 style="color:#fbbf24; margin:0;">412.08 <span style="font-size:0.8rem;">kcal</span></h2>
-            <p style="font-size:0.7rem; opacity:0.6;">Efficiency Index: 0.94 η</p>
-        </div>
-    """, unsafe_allow_html=True)
-    
-    # Step Analytics with Stride Length
-    st.markdown("""
-        <div class="research-card" style="border-left-color: #4ade80;">
-            <small>STRIDE MORPHOLOGY</small>
-            <h2 style="color:#4ade80; margin:0;">0.78 <span style="font-size:0.8rem;">m/step</span></h2>
-            <p style="font-size:0.7rem; opacity:0.6;">Anomalies Detected: 0.02%</p>
-        </div>
-    """, unsafe_allow_html=True)
+elif page == "Metabolics":
+    st.title("Metabolic Expenditure Analysis")
+    col_l, col_r = st.columns([1, 2])
+    with col_l:
+        st.markdown('<div class="research-card"><p class="stat-label">Session Burn</p><p class="stat-value" style="background: linear-gradient(90deg, #fff, #ffcc00); -webkit-background-clip: text; -webkit-text-fill-color: transparent;">412.08</p><p>kcal</p></div>', unsafe_allow_html=True)
+    with col_r:
+        fig = go.Figure(data=[go.Pie(labels=['Carbs', 'Lipids'], values=[70, 30], hole=.6, marker_colors=['#ffcc00', '#555'])])
+        fig.update_layout(template="plotly_dark", paper_bgcolor='rgba(0,0,0,0)')
+        st.plotly_chart(fig, use_container_width=True)
 
-with mid_col:
-    st.markdown("#### [02] 3D KINETIC DIGITAL TWIN")
-    
-    # 3D Mesh / Scatter visualization of gait cycle
-    t = np.linspace(0, 2*np.pi, 100)
-    fig_3d = go.Figure(data=[go.Scatter3d(
-        x=np.cos(t), y=np.sin(t), z=t,
-        mode='lines',
-        line=dict(color='#3b82f6', width=10)
-    )])
-    fig_3d.update_layout(
-        margin=dict(l=0, r=0, b=0, t=0),
-        scene=dict(
-            xaxis=dict(visible=False),
-            yaxis=dict(visible=False),
-            zaxis=dict(visible=False),
-            bgcolor="rgba(0,0,0,0)"
-        ),
-        paper_bgcolor='rgba(0,0,0,0)',
-        height=400
-    )
-    st.plotly_chart(fig_3d, use_container_width=True)
-    
-    # Live Spectral Analysis (FFT)
-    st.markdown("#### GAIT FREQUENCY SPECTRUM (PSD)")
-    freq = np.linspace(0, 5, 100)
-    amp = np.exp(-freq) * np.random.normal(1, 0.05, 100)
-    fig_fft = go.Figure(go.Scatter(x=freq, y=amp, fill='tozeroy', line_color='#3b82f6'))
-    fig_fft.update_layout(paper_bgcolor='rgba(0,0,0,0)', plot_bgcolor='rgba(0,0,0,0)', 
-                          height=150, margin=dict(l=0,r=0,t=0,b=0),
-                          xaxis=dict(title="Frequency (Hz)", color="gray"), yaxis=dict(visible=False))
-    st.plotly_chart(fig_fft, use_container_width=True)
+elif page == "Neural Motion":
+    st.title("LSTM Stride Morphology (3D)")
+    z = np.linspace(0, 1, 100)
+    fig = go.Figure(data=[go.Scatter3d(x=np.cos(z*6), y=np.sin(z*6), z=z, mode='lines', line=dict(color='#7000ff', width=10))])
+    fig.update_layout(scene=dict(bgcolor="black"), paper_bgcolor='black', height=600)
+    st.plotly_chart(fig, use_container_width=True)
 
-with right_col:
-    st.markdown("#### [03] NEURAL LOGS")
-    
-    # Real-time Terminal Log
-    log_entries = [
-        f"[{datetime.now().strftime('%H:%M:%S')}] PACKET_RECIEVED: HEX_0x442",
-        f"[{datetime.now().strftime('%H:%M:%S')}] LSTM_INFERENCE: SYMMETRY_OK",
-        f"[{datetime.now().strftime('%H:%M:%S')}] CNN_FILTER: NOISE_REDUCED_12dB",
-        f"[{datetime.now().strftime('%H:%M:%S')}] IMU_AXIS: X:0.02, Y:0.88, Z:0.12",
-        f"[{datetime.now().strftime('%H:%M:%S')}] ANALYTICS: CALORIC_MODEL_STABLE"
-    ]
-    st.markdown(f"""
-        <div class="terminal-log">
-            { "<br>".join(log_entries) }
-            <br> > SYSTEM_IDLE_LISTENING...
-        </div>
-    """, unsafe_allow_html=True)
-    
-    st.markdown("<br>", unsafe_allow_html=True)
-    
-    # AI Confidence Gauge
-    st.markdown("#### INFERENCE CONFIDENCE")
-    st.markdown("""
-        <div class="floater">
-            <h1 style="color:#3b82f6; margin:0;">99.4%</h1>
-            <small>MODEL RELIABILITY INDEX</small>
-        </div>
-    """, unsafe_allow_html=True)
-
-# --- Footer System Status ---
-st.markdown("---")
-cols = st.columns(6)
-status_labels = ["GPS: LOCK", "IMU: ACTIVE", "BTLE: 4.2", "MEM: 12GB", "LAT: 12ms", "VER: 2.04-STABLE"]
-for i, status in enumerate(status_labels):
-    cols[i].markdown(f"<small style='opacity:0.4;'>{status}</small>", unsafe_allow_html=True)
+elif page == "Hemodynamics":
+    st.title("Cardiovascular Telemetry")
+    m1, m2 = st.columns([1, 2])
+    with m1:
+        st.markdown('<div class="research-card"><p class="stat-label">BPM</p><p class="stat-value" style="background: linear-gradient(90deg, #fff, #ff4b4b); -webkit-background-clip: text; -webkit-text-fill-color: transparent;">74</p></div>', unsafe_allow_html=True)
+    with m2:
+        x = np.linspace(0, 2, 500)
+        y = np.sin(20*x) * np.exp(-x) 
+        fig = go.Figure(go.Scatter(x=x, y=y, line_color='#ff4b4b'))
+        fig.update_layout(template="plotly_dark", paper_bgcolor='rgba(0,0,0,0)', plot_bgcolor='rgba(0,0,0,0)')
+        st.plotly_chart(fig, use_container_width=True)
