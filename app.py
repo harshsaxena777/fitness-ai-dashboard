@@ -6,6 +6,30 @@ import time
 from datetime import datetime
 
 # --- 1. CORE CONFIGURATION ---
+# --- 1. CORE CONFIGURATION ---
+st.set_page_config(page_title="STRIDE-AI | Research Suite", layout="wide")
+
+# --- MIDNIGHT RESET LOGIC ---
+current_date = datetime.now().strftime("%Y-%m-%d")
+
+# Agar date change hui hai (matlab 12 baj chuke hain)
+if 'last_reset_date' not in st.session_state:
+    st.session_state.last_reset_date = current_date
+
+if st.session_state.last_reset_date != current_date:
+    st.session_state.steps = 0
+    st.session_state.heart_rate = 72
+    st.session_state.calories = 0.0
+    st.session_state.last_reset_date = current_date
+    st.toast("System Reset: New Day Detected. Data set to zero.")
+
+# --- Initialize Session State (sirf tab jab pehli baar run ho) ---
+if 'steps' not in st.session_state:
+    st.session_state.steps = 0  # Initial value 0 rakho presentation ke liye
+if 'heart_rate' not in st.session_state:
+    st.session_state.heart_rate = 72
+if 'calories' not in st.session_state:
+    st.session_state.calories = 0.0
 st.set_page_config(page_title="STRIDE-AI | Research Suite", layout="wide")
 
 # --- Initialize Session State for Real-Time Tracking ---
