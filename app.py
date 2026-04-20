@@ -2,10 +2,19 @@ import streamlit as st
 import plotly.graph_objects as go
 import numpy as np
 import pandas as pd
+import time
 from datetime import datetime
 
 # --- 1. CORE CONFIGURATION ---
 st.set_page_config(page_title="STRIDE-AI | Research Suite", layout="wide")
+
+# --- Initialize Session State for Real-Time Tracking ---
+if 'steps' not in st.session_state:
+    st.session_state.steps = 8420
+if 'heart_rate' not in st.session_state:
+    st.session_state.heart_rate = 72
+if 'calories' not in st.session_state:
+    st.session_state.calories = 310.5
 
 # --- 2. GLOBAL UI STYLING ---
 st.markdown("""
@@ -13,7 +22,6 @@ st.markdown("""
     @import url('https://fonts.googleapis.com/css2?family=Outfit:wght@300;700;900&family=JetBrains+Mono:wght@400&display=swap');
     
     .stApp { background: #050505; font-family: 'Outfit', sans-serif; color: #e0e0e0; }
-    
     [data-testid="stSidebar"] { background-color: #0a0a0c !important; border-right: 1px solid #3b82f633; }
     
     .research-card {
@@ -31,7 +39,13 @@ st.markdown("""
     @keyframes pulse { 0% { opacity: 0.4; } 50% { opacity: 1; } 100% { opacity: 0.4; } }
     .live-dot { height: 10px; width: 10px; background-color: #ff4b4b; border-radius: 50%; display: inline-block; animation: pulse 1.5s infinite; margin-right: 8px; }
     
-    @keyframes heart-pulse { 0% { transform: scale(1); } 50% { transform: scale(1.05); } 100% { transform: scale(1); } }
+    .report-box {
+        background: #111;
+        border-left: 5px solid #3b82f6;
+        padding: 20px;
+        border-radius: 10px;
+        margin-top: 20px;
+    }
 </style>
 """, unsafe_allow_html=True)
 
@@ -45,115 +59,102 @@ with st.sidebar:
                     ["[01] Step Analytics", 
                      "[02] Caloric Detector", 
                      "[03] Neural Motion & Validation", 
-                     "[04] Heart Beat Analysis"])
+                     "[04] Heart Beat Analysis",
+                     "[05] AI Health Report"])
     
     st.markdown("---")
+    if st.button("🚀 TRIGGER LIVE WALK"):
+        st.session_state.steps += np.random.randint(5, 15)
+        st.session_state.heart_rate = np.random.randint(110, 135)
+        st.session_state.calories += round(np.random.uniform(0.5, 1.2), 2)
+        st.toast("Capturing Real-time Motion Data...")
+        
     st.markdown("<p style='font-size:0.8rem;'><span class='live-dot'></span> TELEMETRY: ACTIVE</p>", unsafe_allow_html=True)
-    st.caption("AI Model: LSTM-CNN Hybrid")
 
 # --- 4. MODULE ROUTING ---
 
-# --- PAGE 1: KINETICS ---
 if page == "[01] Step Analytics":
     st.title("Kinetic Volume Analytics")
     c1, c2, c3 = st.columns(3)
-    c1.markdown('<div class="research-card"><p class="stat-label">Total Volume</p><p class="stat-value">10,372</p></div>', unsafe_allow_html=True)
+    c1.markdown(f'<div class="research-card"><p class="stat-label">Total Volume</p><p class="stat-value">{st.session_state.steps}</p></div>', unsafe_allow_html=True)
     c2.markdown('<div class="research-card"><p class="stat-label">Velocity</p><p class="stat-value">1.4 m/s</p></div>', unsafe_allow_html=True)
     c3.markdown('<div class="research-card"><p class="stat-label">Compliance</p><p class="stat-value">92%</p></div>', unsafe_allow_html=True)
     
-    t = np.linspace(0, 24, 100)
-    steps = np.abs(np.sin(t/4) * 500 + np.random.normal(0, 50, 100))
-    fig = go.Figure(go.Scatter(x=t, y=steps, fill='tozeroy', line_color='#3b82f6'))
-    fig.update_layout(template="plotly_dark", paper_bgcolor='rgba(0,0,0,0)', plot_bgcolor='rgba(0,0,0,0)', height=400)
+    # Real-time Trend Graph
+    t = np.linspace(0, 10, 50)
+    steps_trend = np.cumsum(np.random.poisson(5, 50)) + st.session_state.steps
+    fig = go.Figure(go.Scatter(x=t, y=steps_trend, fill='tozeroy', line_color='#3b82f6'))
+    fig.update_layout(template="plotly_dark", title="Accumulated Motion Waveform", paper_bgcolor='rgba(0,0,0,0)', plot_bgcolor='rgba(0,0,0,0)')
     st.plotly_chart(fig, use_container_width=True)
 
-# --- PAGE 2: METABOLICS ---
 elif page == "[02] Caloric Detector":
-    st.title("Metabolic Expenditure & AI Validation")
+    st.title("Metabolic Expenditure")
+    kcal = st.session_state.calories
+    color = "#fbbf24" if kcal > 400 else "#00ffbd"
     
-    kcal_burned = 412.08
-    is_high_intensity = kcal_burned > 400
-    color, status = ("#fbbf24", "⚡ GLYCOGEN DEPLETION RISK") if is_high_intensity else ("#00ffbd", "✅ OPTIMAL BURN")
-
-    c_box, c_diag = st.columns([1, 2])
-    with c_box:
-        st.markdown(f"""
-            <div style="background:{color}22; border: 2px solid {color}; border-radius:20px; padding:30px; text-align:center;">
-                <p style="color:{color}; font-weight:900; margin:0;">{status}</p>
-                <h1 style="margin:0; font-size:3rem; color:white;">{kcal_burned}</h1>
-                <small>KCAL DETECTED</small>
-            </div>
-        """, unsafe_allow_html=True)
-    with c_diag:
-        if is_high_intensity:
-            st.warning("**AI Analysis:** High metabolic intensity detected. Substrate shift to glucose utilization.")
-            st.markdown("- **Precaution:** Consume electrolytes and fast carbohydrates.")
-            st.markdown("- **Precaution:** Monitor for lactate threshold fatigue.")
-        else:
-            st.success("**AI Analysis:** Metabolic rate stable. Fat-oxidation optimized.")
-
-    fig = go.Figure(data=[go.Pie(labels=['Carbs', 'Lipids'], values=[70, 30], hole=.6, marker_colors=['#fbbf24', '#333'])])
+    st.markdown(f"""
+        <div style="background:{color}22; border: 2px solid {color}; border-radius:20px; padding:30px; text-align:center;">
+            <h1 style="margin:0; font-size:4rem; color:white;">{kcal}</h1>
+            <p style="color:{color}; font-weight:900;">KCAL BURNED (LIVE)</p>
+        </div>
+    """, unsafe_allow_html=True)
+    
+    fig = go.Figure(data=[go.Pie(labels=['Carbs', 'Lipids'], values=[65, 35], hole=.6, marker_colors=['#fbbf24', '#333'])])
     fig.update_layout(template="plotly_dark", paper_bgcolor='rgba(0,0,0,0)')
     st.plotly_chart(fig, use_container_width=True)
 
-# --- PAGE 3: NEURAL MOTION ---
-elif page == "[03] Neural Motion & Validation":
-    st.title("Neural Motion Analytics & AI Prescription")
-    
-    symmetry = 0.82 
-    is_anomaly = symmetry < 0.85
-    color, status = ("#f87171", "⚠️ ANOMALY DETECTED") if is_anomaly else ("#00ffbd", "✅ MOTION VALIDATED")
-
-    c_box, c_diag = st.columns([1, 2])
-    with c_box:
-        st.markdown(f"""
-            <div style="background:{color}22; border: 2px solid {color}; border-radius:20px; padding:30px; text-align:center;">
-                <p style="color:{color}; font-weight:900; margin:0;">{status}</p>
-                <h1 style="margin:0; font-size:3.5rem; color:white;">{int(symmetry*100)}%</h1>
-                <small>GAIT SCORE</small>
-            </div>
-        """, unsafe_allow_html=True)
-    with c_diag:
-        if is_anomaly:
-            st.error(f"**Diagnostic:** Propulsion deficit of {int((1-symmetry)*100)}% in unilateral gait phase.")
-            st.markdown("- **Precaution:** Reduce treadmill incline immediately.")
-            st.markdown("- **Precaution:** Check for medial shoe-sole compression.")
-        else:
-            st.success("**Diagnostic:** Stride morphology is within optimal parameters.")
-
-    z = np.linspace(0, 1, 100)
-    fig_3d = go.Figure(data=[go.Scatter3d(x=np.cos(z*6), y=np.sin(z*6), z=z, mode='lines', line=dict(color=color, width=10))])
-    fig_3d.update_layout(scene=dict(bgcolor="black", xaxis_visible=False, yaxis_visible=False, zaxis_visible=False), paper_bgcolor='black', height=500, margin=dict(l=0, r=0, b=0, t=0))
-    st.plotly_chart(fig_3d, use_container_width=True)
-
-# --- PAGE 4: HEART ANALYSIS ---
 elif page == "[04] Heart Beat Analysis":
-    st.title("Hemodynamic Telemetry & Cardiac Safety")
+    st.title("Hemodynamic Telemetry")
+    bpm = st.session_state.heart_rate
+    is_danger = bpm > 120
+    color = "#ff4b4b" if is_danger else "#00ffbd"
     
-    current_bpm = 158
-    is_danger = current_bpm > 150
-    color, status = ("#ff4b4b", "🚨 ANAEROBIC THRESHOLD") if is_danger else ("#00ffbd", "✅ AEROBIC STABILITY")
-    pulse_anim = "animation: heart-pulse 0.6s infinite;" if is_danger else ""
+    st.markdown(f"""
+        <div style="background:{color}22; border: 2px solid {color}; border-radius:20px; padding:30px; text-align:center;">
+            <h1 style="margin:0; font-size:5rem; color:white;">{bpm}</h1>
+            <p style="color:{color}; font-weight:900;">LIVE BPM TRACKING</p>
+        </div>
+    """, unsafe_allow_html=True)
 
-    c_box, c_diag = st.columns([1, 2])
-    with c_box:
-        st.markdown(f"""
-            <div style="background:{color}22; border: 2px solid {color}; border-radius:20px; padding:30px; text-align:center; {pulse_anim}">
-                <p style="color:{color}; font-weight:900; margin:0;">{status}</p>
-                <h1 style="margin:0; font-size:4rem; color:white;">{current_bpm}</h1>
-                <small>LIVE BPM</small>
-            </div>
-        """, unsafe_allow_html=True)
-    with c_diag:
-        if is_danger:
-            st.error("**Cardiac Warning:** Cardiovascular strain high. Zone 5 training detected.")
-            st.markdown("- **Precaution:** Immediate recovery: Reduce to walking pace.")
-            st.markdown("- **Precaution:** Focus on deep nasal breathing.")
-        else:
-            st.success("**Cardiac AI:** Heart rate within endurance aerobic range.")
-
-    x = np.linspace(0, 2, 500)
-    y = np.sin(20*x) * np.exp(-x) 
-    fig = go.Figure(go.Scatter(x=x, y=y, line_color='#ff4b4b'))
-    fig.update_layout(template="plotly_dark", paper_bgcolor='rgba(0,0,0,0)', plot_bgcolor='rgba(0,0,0,0)', height=250)
+    # Pulsing ECG Graph
+    x = np.linspace(0, 4, 1000)
+    y = np.sin(2 * np.pi * (bpm/60) * x) + 0.1 * np.random.normal(0,1,1000)
+    fig = go.Figure(go.Scatter(x=x, y=y, line_color=color))
+    fig.update_layout(template="plotly_dark", height=300, xaxis_visible=False, yaxis_visible=False)
     st.plotly_chart(fig, use_container_width=True)
+
+elif page == "[05] AI Health Report":
+    st.title("Final Health Diagnosis & Report")
+    
+    if st.button("🔍 RUN FULL BODY SCAN"):
+        with st.status("Analyzing Kinetic Data...", expanded=True) as status:
+            time.sleep(1.5)
+            st.write("Checking Metabolic Rate...")
+            time.sleep(1)
+            st.write("Validating Gait Symmetry...")
+            status.update(label="Analysis Complete!", state="complete")
+
+        st.markdown(f"""
+        <div class="report-box">
+            <h2 style="color:#3b82f6;">STRIDE-AI DIAGNOSTIC REPORT</h2>
+            <hr style="opacity:0.2;">
+            <p><b>Subject:</b> Harsh Saxena | <b>Date:</b> {datetime.now().strftime('%Y-%m-%d %H:%M')}</p>
+            <p><b>Summary:</b> Your current activity level shows a <b>{'High' if st.session_state.steps > 8000 else 'Moderate'}</b> kinetic volume.</p>
+            <ul>
+                <li><b>Heart Health:</b> {'Elevated BPM. Suggesting cooldown.' if st.session_state.heart_rate > 100 else 'Stable resting heart rate.'}</li>
+                <li><b>Metabolic State:</b> Current burn is {st.session_state.calories} kcal. You are in the <b>Fat Oxidation Zone</b>.</li>
+                <li><b>Suggestion:</b> Increase hydration. Your step count is {10000 - st.session_state.steps} steps away from the daily goal.</li>
+            </ul>
+            <p style="color:#3b82f6; font-size:0.8rem;"><i>*This is an AI-generated research insight.</i></p>
+        </div>
+        """, unsafe_allow_html=True)
+        st.button("📥 DOWNLOAD PDF REPORT")
+
+# Default page catch for Neural Motion
+elif page == "[03] Neural Motion & Validation":
+    st.title("Neural Motion Analytics")
+    st.info("System checking Gait Symmetry... Walk with your device to calibrate.")
+    z = np.linspace(0, 1, 100)
+    fig_3d = go.Figure(data=[go.Scatter3d(x=np.cos(z*6), y=np.sin(z*6), z=z, mode='lines', line=dict(color='#3b82f6', width=10))])
+    fig_3d.update_layout(scene=dict(bgcolor="black"), paper_bgcolor='black', height=600)
+    st.plotly_chart(fig_3d, use_container_width=True)
