@@ -1,2 +1,6 @@
+
 streamlit
 plotly
+numpy
+pandas
+fpdf2
