@@ -6,7 +6,6 @@ import time
 from datetime import datetime
 
 # --- 1. CORE CONFIGURATION ---
-# --- 1. CORE CONFIGURATION ---
 st.set_page_config(page_title="STRIDE-AI | Research Suite", layout="wide")
 
 # --- MIDNIGHT RESET LOGIC ---
@@ -74,6 +73,27 @@ st.markdown("""
 """, unsafe_allow_html=True)
 
 # --- 3. SIDEBAR NAVIGATION ---
+# --- SIDEBAR NAVIGATION (Updated with Reset) ---
+with st.sidebar:
+    # ... (purana code) ...
+    
+    st.markdown("---")
+    
+    # 1. Action Button (For Demo)
+    if st.button("🚀 TRIGGER LIVE WALK"):
+        st.session_state.steps += np.random.randint(10, 25)
+        st.session_state.heart_rate = np.random.randint(115, 140)
+        st.session_state.calories += round(np.random.uniform(0.8, 1.5), 2)
+        st.toast("Capturing Real-time Motion...")
+
+    # 2. Reset Button (For a Fresh Start)
+    if st.button("🔄 SYSTEM REBOOT (RESET)"):
+        st.session_state.steps = 0
+        st.session_state.heart_rate = 72
+        st.session_state.calories = 0.0
+        st.success("All metrics cleared to 0!")
+        time.sleep(1)
+        st.rerun() # Page refresh ho jayega automatically
 with st.sidebar:
     st.markdown("<h1 style='color:#3b82f6; font-weight:900; margin-bottom:0;'>STRIDE-AI</h1>", unsafe_allow_html=True)
     st.markdown("<p style='font-family:\"JetBrains Mono\"; font-size:0.7rem; opacity:0.6; margin-top:0;'>SYSTEM CORE v3.0 [PG-RESEARCH]</p>", unsafe_allow_html=True)
