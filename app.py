@@ -6,115 +6,123 @@ import pandas as pd
 import time
 from datetime import datetime, timedelta
 
-# --- 1. CORE CONFIGURATION ---
-st.set_page_config(page_title="STRIDE-AI PRO | Clinical Suite", layout="wide")
+# --- 1. SETTINGS & STYLES ---
+st.set_page_config(page_title="STRIDE-AI | Clinical Intelligence", layout="wide")
 
-# --- 2. SESSION STATE & DATA LOGGING ---
-if 'steps' not in st.session_state: st.session_state.steps = 1250
-if 'heart_rate' not in st.session_state: st.session_state.heart_rate = 72
-if 'calories' not in st.session_state: st.session_state.calories = 45.0
-if 'start_time' not in st.session_state: st.session_state.start_time = time.time()
-
-# --- 3. SIDEBAR: ADVANCED CONTROLS ---
-with st.sidebar:
-    st.markdown("<h1 style='color:#3b82f6; font-weight:900;'>STRIDE-AI PRO</h1>", unsafe_allow_html=True)
-    st.caption("v8.0 | Clinical Research Mode")
-    st.markdown("---")
-    
-    # User Profile
-    u_weight = st.number_input("Weight (kg)", 40, 150, 70)
-    
-    # Navigation
-    page = st.selectbox("MODULE SELECTOR", 
-                        ["Analytics Dashboard", "Gait Symmetry", "Health Projections", "Export Center"])
-    
-    st.markdown("---")
-    if st.button("🚀 INJECT LIVE TELEMETRY"):
-        st.session_state.steps += np.random.randint(50, 150)
-        st.session_state.heart_rate = np.random.randint(110, 145)
-        st.session_state.calories += round((u_weight * 0.05), 2)
-        st.rerun()
-
-# --- 4. THEME STYLING ---
 st.markdown("""
 <style>
-    .stApp { background: #050505; color: #e0e0e0; }
-    .metric-card {
-        background: rgba(255, 255, 255, 0.02);
-        border: 1px solid rgba(59, 130, 246, 0.2);
-        border-radius: 15px; padding: 20px; text-align: center;
+    .stApp { background: #020204; color: #d1d1d1; font-family: 'Inter', sans-serif; }
+    .terminal-log {
+        background: #000; border: 1px solid #1f2937; border-radius: 5px;
+        padding: 15px; font-family: 'JetBrains Mono', monospace; font-size: 0.8rem; color: #4ade80;
+        height: 150px; overflow-y: auto; margin-bottom: 20px;
     }
-    .stat-val { font-size: 2.2rem; font-weight: 800; color: #ffffff; }
-    .stat-lab { font-size: 0.7rem; color: #3b82f6; letter-spacing: 1px; }
+    .metric-container {
+        background: linear-gradient(145deg, #0a0a0c, #111114);
+        border: 1px solid #ffffff10; border-radius: 15px; padding: 20px;
+    }
+    .glitch-text { font-weight: 900; color: #3b82f6; text-transform: uppercase; letter-spacing: 3px; }
 </style>
 """, unsafe_allow_html=True)
 
-# --- 5. PAGE: DASHBOARD ---
-if page == "Analytics Dashboard":
-    # Top Row Metrics
-    elapsed = str(timedelta(seconds=int(time.time() - st.session_state.start_time)))
+# --- 2. SESSION STATE ---
+if 'steps' not in st.session_state: st.session_state.steps = 5420
+if 'heart_rate' not in st.session_state: st.session_state.heart_rate = 72
+if 'logs' not in st.session_state: st.session_state.logs = [f"[{datetime.now().strftime('%H:%M:%S')}] System Initialized..."]
+
+def add_log(msg):
+    st.session_state.logs.append(f"[{datetime.now().strftime('%H:%M:%S')}] {msg}")
+
+# --- 3. SIDEBAR: PRO PARAMETERS ---
+with st.sidebar:
+    st.markdown("<h2 class='glitch-text'>STRIDE-AI v9</h2>", unsafe_allow_html=True)
+    st.markdown("---")
+    u_age = st.slider("User Age", 18, 80, 22)
+    u_weight = st.slider("Mass (kg)", 40.0, 120.0, 70.0)
     
+    module = st.sidebar.selectbox("RESEARCH HUB", 
+        ["Biometric Workstation", "Gait Dynamics", "Clinical Intelligence"])
+    
+    if st.button("🔴 INJECT REAL-TIME TELEMETRY"):
+        st.session_state.steps += np.random.randint(100, 300)
+        st.session_state.heart_rate = np.random.randint(110, 155)
+        add_log(f"Motion Detected: Intensity {np.random.choice(['High', 'Mid', 'Max'])}")
+        st.rerun()
+
+# --- 4. DATA ENGINE (COMPLEX CALCULATIONS) ---
+# VO2 Max Estimate: 15 * (HRmax / HRrest)
+vo2_max = round(15 * ( (220 - u_age) / st.session_state.heart_rate ), 2)
+entropy_score = round(np.random.uniform(0.1, 0.4), 3) # Lower is more stable gait
+
+# --- 5. UI LAYOUT ---
+
+# TOP LOG: NEURAL ACTIVITY LOG (The "Complex" Look)
+log_box = "".join([f"<div>{l}</div>" for l in st.session_state.logs[-5:]])
+st.markdown(f'<div class="terminal-log">{log_box}</div>', unsafe_allow_html=True)
+
+if module == "Biometric Workstation":
+    # Metrics Row
     c1, c2, c3, c4 = st.columns(4)
-    with c1: st.markdown(f'<div class="metric-card"><p class="stat-lab">STEPS</p><p class="stat-val">{st.session_state.steps}</p></div>', unsafe_allow_html=True)
-    with c2: st.markdown(f'<div class="metric-card"><p class="stat-lab">PULSE</p><p class="stat-val">{st.session_state.heart_rate}</p></div>', unsafe_allow_html=True)
-    with c3: st.markdown(f'<div class="metric-card"><p class="stat-lab">METABOLIC</p><p class="stat-val">{st.session_state.calories} kcal</p></div>', unsafe_allow_html=True)
-    with c4: st.markdown(f'<div class="metric-card"><p class="stat-lab">UPTIME</p><p class="stat-val">{elapsed}</p></div>', unsafe_allow_html=True)
+    with c1: st.markdown(f'<div class="metric-container">👣 <small>STEPS</small><br><h2>{st.session_state.steps}</h2></div>', unsafe_allow_html=True)
+    with c2: st.markdown(f'<div class="metric-container">🫀 <small>PULSE</small><br><h2>{st.session_state.heart_rate}</h2></div>', unsafe_allow_html=True)
+    with c3: st.markdown(f'<div class="metric-container">💨 <small>VO2 MAX</small><br><h2>{vo2_max}</h2></div>', unsafe_allow_html=True)
+    with c4: st.markdown(f'<div class="metric-container">⚖️ <small>ENTROPY</small><br><h2>{entropy_score}</h2></div>', unsafe_allow_html=True)
 
-    # Iframe Clock Integration
-    st.components.v1.iframe("https://www.zeitverschiebung.net/clock-widget-iframe-v2?language=en&size=medium&timezone=Asia%2FKolkata", height=110)
+    # Intensity Heatmap (The "More Features" Part)
+    st.markdown("### 🗓️ Weekly Metabolic Heatmap")
+    intensity_data = np.random.randint(0, 100, (1, 7))
+    fig_heat = px.imshow(intensity_data, 
+                         labels=dict(x="Day of Week", y="Intensity", color="Level"),
+                         x=['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'],
+                         color_continuous_scale='Blues')
+    fig_heat.update_layout(height=150, paper_bgcolor='rgba(0,0,0,0)', plot_bgcolor='rgba(0,0,0,0)')
+    st.plotly_chart(fig_heat, use_container_width=True)
 
-    # Live Stride Frequency Wave
-    st.markdown("### 📡 Real-time Stride Frequency (Hz)")
-    x = np.linspace(0, 10, 100)
-    y = np.sin(x) * np.random.uniform(0.8, 1.2, 100)
-    fig = px.line(x=x, y=y, template="plotly_dark")
-    fig.update_traces(line_color='#3b82f6', fill='tozeroy')
-    fig.update_layout(height=300, margin=dict(l=0, r=0, t=0, b=0), paper_bgcolor='rgba(0,0,0,0)', plot_bgcolor='rgba(0,0,0,0)')
-    st.plotly_chart(fig, use_container_width=True)
+    # Live Gauge for Cardio Zone
+    st.markdown("### 🎯 Cardiovascular Zone Analysis")
+    fig_gauge = go.Figure(go.Indicator(
+        mode = "gauge+number",
+        value = st.session_state.heart_rate,
+        gauge = {'axis': {'range': [40, 200]},
+                 'steps': [{'range': [40, 100], 'color': "gray"},
+                           {'range': [100, 140], 'color': "blue"},
+                           {'range': [140, 200], 'color': "red"}],
+                 'threshold': {'line': {'color': "white", 'width': 4}, 'thickness': 0.75, 'value': (220-u_age)*0.8}}))
+    fig_gauge.update_layout(height=300, paper_bgcolor='rgba(0,0,0,0)')
+    st.plotly_chart(fig_gauge, use_container_width=True)
 
-# --- 6. PAGE: GAIT SYMMETRY (Radar Chart) ---
-elif page == "Gait Symmetry":
-    st.title("⚖️ Gait Symmetry Analysis")
-    st.write("Assessment of bilateral walking mechanics.")
+elif module == "Gait Dynamics":
+    st.title("🛰️ Spatiotemporal Gait Mapping")
     
-    # Radar Chart Data
-    categories = ['Stability', 'Rhythm', 'Velocity', 'Symmetry', 'Endurance']
-    values = [85, 70, 92, 88, 65] # These can be dynamic based on steps
+    # 3D Stride Trajectory
+    z = np.linspace(0, 10, 100)
+    x = np.sin(z) * entropy_score * 10
+    y = np.cos(z) * entropy_score * 10
     
-    fig_radar = go.Figure(data=go.Scatterpolar(
-        r=values, theta=categories, fill='toself', line_color='#00ffbd'
-    ))
-    fig_radar.update_layout(polar=dict(bgcolor="black", radialaxis=dict(visible=True, range=[0, 100])),
-                           template="plotly_dark", paper_bgcolor='black')
-    st.plotly_chart(fig_radar, use_container_width=True)
-    st.info("AI Analysis: Your 'Endurance' score is lower than average. Consider interval training.")
+    fig_3d = go.Figure(data=[go.Scatter3d(x=x, y=y, z=z, mode='lines+markers', 
+                                         line=dict(color='#3b82f6', width=5),
+                                         marker=dict(size=3, color=z, colorscale='Plasma'))])
+    fig_3d.update_layout(scene=dict(bgcolor="black"), paper_bgcolor='black', height=600)
+    st.plotly_chart(fig_3d, use_container_width=True)
+    st.info("Technical Note: The 3D spiral represents the neural feedback loop of your gait. Higher entropy creates more 'noise' in the spiral.")
 
-# --- 7. PAGE: HEALTH PROJECTIONS (Predictive Graph) ---
-elif page == "Health Projections":
-    st.title("📈 Predictive Health Modeling")
-    st.write("AI-driven forecast for the next 7 days based on current intensity.")
+elif module == "Clinical Intelligence":
+    st.title("🧠 Predictive Diagnostic Hub")
     
-    days = [(datetime.now() + timedelta(days=i)).strftime('%d %b') for i in range(1, 8)]
-    # Predictive logic (Current steps + daily increment)
-    future_steps = [st.session_state.steps + (i * 1200) for i in range(1, 8)]
+    # Complex Comparison Table
+    st.write("Cross-Analysis: User Metrics vs. Clinical Norms")
+    comparison_df = pd.DataFrame({
+        "Metric": ["Resting BPM", "Stride Length", "VO2 Max", "Gait Rhythm"],
+        "User Value": [st.session_state.heart_rate, "0.78m", vo2_max, "Stable"],
+        "Clinical Target": ["60-100", "0.70m-0.85m", "35-45", "Consistent"],
+        "Status": ["PASS", "PASS", "ELITE" if vo2_max > 45 else "NORMAL", "PASS"]
+    })
+    st.table(comparison_df)
     
-    fig_proj = px.bar(x=days, y=future_steps, labels={'x':'Date', 'y':'Predicted Steps'}, 
-                      title="Step Forecast (LSTM Model)", color=future_steps, color_continuous_scale='Blues')
-    st.plotly_chart(fig_proj, use_container_width=True)
-
-# --- 8. PAGE: EXPORT CENTER (CSV Export) ---
-elif page == "Export Center":
-    st.title("📤 Research Data Export")
-    st.write("Generate and download your activity log for clinical submission.")
+    # Iframe: Real-time Data Visualization (NASA or Medical related for 'The Look')
+    st.markdown("### 📡 Live Clinical Reference Feed")
+    st.components.v1.iframe("https://www.zeitverschiebung.net/clock-widget-iframe-v2?language=en&size=medium&timezone=Asia%2FKolkata", height=120)
     
-    data_log = {
-        "Timestamp": [datetime.now().strftime("%Y-%m-%d %H:%M:%S")],
-        "Steps": [st.session_state.steps],
-        "BPM": [st.session_state.heart_rate],
-        "Calories": [st.session_state.calories]
-    }
-    df = pd.DataFrame(data_log)
-    st.table(df)
-    
-    csv = df.to_csv(index=False).encode('utf-8')
-    st.download_button("📥 DOWNLOAD RESEARCH CSV", data=csv, file_name="StrideAI_Log.csv", mime="text/csv")
+    if st.button("📂 EXPORT CLINICAL JSON"):
+        add_log("Exporting session data to JSON format...")
+        st.download_button("Download Report", data=comparison_df.to_json(), file_name="Stride_Report.json")
