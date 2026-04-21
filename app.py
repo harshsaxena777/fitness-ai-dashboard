@@ -1,121 +1,119 @@
 import streamlit as st
 import plotly.graph_objects as go
-import plotly.express as px
 import numpy as np
 import pandas as pd
 import time
 from datetime import datetime
 
 # --- 1. CORE CONFIGURATION ---
-st.set_page_config(page_title="STRIDE-AI PRO | Analytics Suite", layout="wide")
+st.set_page_config(page_title="STRIDE-AI | Research Suite", layout="wide")
 
-# --- 2. DATASET INTEGRATION (External Dataset Simulation) ---
-# Yahan hum ek external CSV load kar rahe hain (Global Health Benchmarks)
-@st.cache_data
-def load_global_data():
-    data = {
-        'Region': ['Asia', 'Europe', 'Americas', 'Africa', 'Global Avg'],
-        'Avg_Steps': [6500, 8200, 7800, 9100, 7500],
-        'Avg_BPM': [72, 70, 74, 68, 71]
+# --- 2. STATE MANAGEMENT & DATA INTEGRATION ---
+if 'steps' not in st.session_state: st.session_state.steps = 0
+if 'heart_rate' not in st.session_state: st.session_state.heart_rate = 72
+if 'calories' not in st.session_state: st.session_state.calories = 0.0
+
+# External Benchmark Data (Comparison Logic)
+GLOBAL_STEP_AVG = 7500 
+
+# --- 3. GLOBAL UI STYLING ---
+st.markdown("""
+<style>
+    @import url('https://fonts.googleapis.com/css2?family=Outfit:wght@300;700;900&family=JetBrains+Mono:wght@400&display=swap');
+    .stApp { background: #050505; font-family: 'Outfit', sans-serif; color: #e0e0e0; }
+    [data-testid="stSidebar"] { background-color: #0a0a0c !important; border-right: 1px solid #3b82f633; }
+    .research-card {
+        background: rgba(255, 255, 255, 0.03);
+        backdrop-filter: blur(10px);
+        border: 1px solid rgba(255, 255, 255, 0.1);
+        border-radius: 20px;
+        padding: 24px;
+        margin-bottom: 20px;
     }
-    return pd.DataFrame(data)
+    .stat-label { font-family: 'JetBrains Mono', monospace; font-size: 0.75rem; color: #3b82f6; letter-spacing: 2px; }
+    .stat-value { font-size: 2.8rem; font-weight: 900; margin: 0; color: #ffffff; }
+    .report-box { background: #111; border-left: 5px solid #3b82f6; padding: 25px; border-radius: 15px; border: 1px solid rgba(59, 130, 246, 0.2); }
+</style>
+""", unsafe_allow_html=True)
 
-global_df = load_global_data()
-
-# --- 3. STATE MANAGEMENT ---
-if 'steps' not in st.session_state: st.session_state.steps = 4200
-if 'heart_rate' not in st.session_state: st.session_state.heart_rate = 78
-if 'calories' not in st.session_state: st.session_state.calories = 150.0
-
-# --- 4. SIDEBAR & CONTROLS ---
+# --- 4. SIDEBAR ---
 with st.sidebar:
-    st.title("🛡️ STRIDE-AI PRO")
-    st.markdown("---")
-    page = st.selectbox("CHOOSE MODULE", ["Executive Dashboard", "Global Benchmarking", "Neural Bio-Scan"])
+    st.markdown("<h1 style='color:#3b82f6; font-weight:900;'>STRIDE-AI</h1>", unsafe_allow_html=True)
+    page = st.radio("RESEARCH MODULES", 
+                    ["[01] Dashboard", "[02] Neural Motion", "[03] AI Health Report"])
     
-    st.write("### 🎛️ Sensor Input")
-    if st.button("🚀 Push Live Telemetry"):
-        st.session_state.steps += 150
+    st.markdown("---")
+    st.markdown("### 🎛️ SENSOR EMULATION")
+    if st.button("🚀 TRIGGER MOTION"):
+        st.session_state.steps += np.random.randint(25, 60)
         st.session_state.heart_rate = np.random.randint(110, 140)
-        st.session_state.calories += 12.5
+        st.session_state.calories += round(np.random.uniform(1.5, 3.5), 2)
+        st.rerun()
+    
+    if st.button("🔄 SYSTEM REBOOT"):
+        st.session_state.steps = 0
+        st.session_state.heart_rate = 72
+        st.session_state.calories = 0.0
         st.rerun()
 
-# --- 5. PAGE 1: EXECUTIVE DASHBOARD ---
-if page == "Executive Dashboard":
-    st.header("Executive Kinetic Overview")
+# --- 5. PAGE: DASHBOARD ---
+if page == "[01] Dashboard":
+    st.title("Kinetic Executive Overview")
     
-    col1, col2, col3 = st.columns([2, 1, 1])
-    
-    with col1:
-        # COMPLEX METRIC: Gauge Chart for Heart Rate
-        fig_gauge = go.Figure(go.Indicator(
-            mode = "gauge+number+delta",
-            value = st.session_state.heart_rate,
-            domain = {'x': [0, 1], 'y': [0, 1]},
-            title = {'text': "Live BPM Telemetry", 'font': {'size': 24}},
-            delta = {'reference': 70, 'increasing': {'color': "red"}},
-            gauge = {
-                'axis': {'range': [None, 200]},
-                'bar': {'color': "#3b82f6"},
-                'steps': [
-                    {'range': [0, 100], 'color': "rgba(0, 255, 0, 0.1)"},
-                    {'range': [100, 150], 'color': "rgba(255, 255, 0, 0.1)"},
-                    {'range': [150, 200], 'color': "rgba(255, 0, 0, 0.1)"}
-                ],
-            }
-        ))
-        fig_gauge.update_layout(paper_bgcolor='rgba(0,0,0,0)', font={'color': "white", 'family': "Arial"})
-        st.plotly_chart(fig_gauge, use_container_width=True)
+    col1, col2, col3 = st.columns(3)
+    col1.markdown(f'<div class="research-card"><p class="stat-label">TOTAL STEPS</p><p class="stat-value">{st.session_state.steps}</p></div>', unsafe_allow_html=True)
+    col2.markdown(f'<div class="research-card"><p class="stat-label">LIVE BPM</p><p class="stat-value">{st.session_state.heart_rate}</p></div>', unsafe_allow_html=True)
+    col3.markdown(f'<div class="research-card"><p class="stat-label">KCAL BURN</p><p class="stat-value">{st.session_state.calories}</p></div>', unsafe_allow_html=True)
 
-    with col2:
-        st.metric("Metabolic Age", "22.4 yrs", "-1.2 vs last week")
-        st.metric("Caloric Efficiency", f"{st.session_state.calories/200:.2f}%")
-    
-    with col3:
-        # IFRAME INTEGRATION: External Resource
-        st.markdown("### 📽️ Bio-Mechanics Feed")
-        # Embedding a medical/fitness visualization or live clock
-        st.components.v1.iframe("https://www.youtube.com/embed/S_8SizG91U4", height=200)
+    # EXTERNAL INTEGRATION: IFRAME (Live Analytics Clock or Motion Visualization)
+    st.markdown("### 🌐 External Telemetry Feed")
+    # Embedding a clean, professional analog clock/data visualizer
+    st.components.v1.iframe("https://www.zeitverschiebung.net/clock-widget-iframe-v2?language=en&size=medium&timezone=Asia%2FKolkata", height=120)
 
-# --- 6. PAGE 2: GLOBAL BENCHMARKING (External Dataset Use) ---
-elif page == "Global Benchmarking":
-    st.header("Global Kinetic Positioning")
-    st.write("Comparing your data against international health standards.")
-    
-    # User vs Global Data
-    user_val = st.session_state.steps
-    global_avg = global_df[global_df['Region'] == 'Global Avg']['Avg_Steps'].values[0]
-    
-    fig_bar = px.bar(global_df, x='Region', y='Avg_Steps', title="Regional Step Average vs You",
-                     color='Avg_Steps', color_continuous_scale='Blues')
-    # Adding a line for current user steps
-    fig_bar.add_hline(y=user_val, line_dash="dot", line_color="red", 
-                      annotation_text=f"Your Current Position: {user_val}")
-    
-    st.plotly_chart(fig_bar, use_container_width=True)
-    
-    st.markdown(f"""
-    <div style="background: rgba(59, 130, 246, 0.1); padding: 20px; border-radius: 15px; border: 1px solid #3b82f6;">
-        <h4>AI Insight:</h4>
-        <p>You are currently <b>{int((user_val/global_avg)*100)}%</b> of the Global Daily Average. 
-        To reach the European standard of 8,200 steps, you need to increase activity by <b>{max(0, 8200-user_val)}</b> steps today.</p>
-    </div>
-    """, unsafe_allow_html=True)
+    # Comparison Graph with External Benchmark
+    st.markdown("### 📊 Global Benchmarking")
+    fig = go.Figure()
+    fig.add_trace(go.Bar(name='Global Avg', x=['Steps'], y=[GLOBAL_STEP_AVG], marker_color='rgba(255,255,255,0.1)'))
+    fig.add_trace(go.Bar(name='Current User', x=['Steps'], y=[st.session_state.steps], marker_color='#3b82f6'))
+    fig.update_layout(template="plotly_dark", barmode='overlay', paper_bgcolor='rgba(0,0,0,0)', plot_bgcolor='rgba(0,0,0,0)', height=300)
+    st.plotly_chart(fig, use_container_width=True)
 
-# --- 7. PAGE 3: NEURAL BIO-SCAN ---
+# --- 6. PAGE: AI HEALTH REPORT (DYNAMIC & COMPLEX) ---
+elif page == "[03] AI Health Report":
+    st.title("🛡️ AI Smart Diagnostic Engine")
+    
+    if st.button("🔍 INITIATE DEEP BIO-SCAN"):
+        with st.status("Analyzing Live Metrics...", expanded=True) as status:
+            time.sleep(1)
+            st.write("Fetching Global Health Benchmarks...")
+            time.sleep(1)
+            st.write("Cross-referencing Cardiac Zones...")
+            status.update(label="Scan Complete!", state="complete")
+
+        steps = st.session_state.steps
+        bpm = st.session_state.heart_rate
+        
+        # Complex Logic
+        step_diff = GLOBAL_STEP_AVG - steps
+        status_color = "#00ffbd" if steps > GLOBAL_STEP_AVG else "#fbbf24"
+        
+        st.markdown(f"""
+        <div class="report-box" style="border-left-color: {status_color};">
+            <h2 style="color: {status_color}; margin: 0;">CLINICAL SUMMARY</h2>
+            <hr style="opacity: 0.1; margin: 15px 0;">
+            <p><b>Global Comparison:</b> You are at <b>{int((steps/GLOBAL_STEP_AVG)*100)}%</b> of the international daily average.</p>
+            <p><b>Diagnostic:</b> {'Optimal kinetic volume reached.' if steps > GLOBAL_STEP_AVG else f'Sedentary trend detected. Shortfall of {step_diff} steps.'}</p>
+            <div style="background: rgba(59, 130, 246, 0.1); padding: 15px; border-radius: 10px; margin-top: 15px;">
+                <b>AI Prescription:</b> Based on {bpm} BPM, your cardiovascular strain is <b>{'High' if bpm > 120 else 'Normal'}</b>. 
+                {'Immediate recovery suggested.' if bpm > 120 else 'Keep maintaining current pace for fat-oxidation.'}
+            </div>
+        </div>
+        """, unsafe_allow_html=True)
+
+# --- 7. PAGE: NEURAL MOTION ---
 else:
-    st.title("Neural Core Analysis")
-    st.write("Analyzing Gait Entropy and Biometric Symmetry...")
-    
-    # Complex 3D Visualization
-    t = np.linspace(0, 20, 200)
-    fig_3d = go.Figure(data=[go.Scatter3d(
-        x=np.cos(t) * (st.session_state.steps/1000), 
-        y=np.sin(t) * (st.session_state.heart_rate/50), 
-        z=t,
-        mode='lines+markers',
-        line=dict(color='#3b82f6', width=5),
-        marker=dict(size=2, color=t, colorscale='Viridis')
-    )])
-    fig_3d.update_layout(scene=dict(bgcolor="black"), paper_bgcolor='black', height=700)
+    st.title("Neural Motion Analytics")
+    z = np.linspace(0, 1, 100)
+    fig_3d = go.Figure(data=[go.Scatter3d(x=np.cos(z*10), y=np.sin(z*10), z=z, mode='lines', line=dict(color='#3b82f6', width=8))])
+    fig_3d.update_layout(scene=dict(bgcolor="black"), paper_bgcolor='black', height=600)
     st.plotly_chart(fig_3d, use_container_width=True)
