@@ -8,20 +8,40 @@ from datetime import datetime
 # --- 1. CORE CONFIGURATION ---
 st.set_page_config(page_title="STRIDE-AI | Research Suite", layout="wide")
 
-# --- 2. STATE MANAGEMENT & DATA INTEGRATION ---
+# --- 2. STATE MANAGEMENT ---
 if 'steps' not in st.session_state: st.session_state.steps = 0
 if 'heart_rate' not in st.session_state: st.session_state.heart_rate = 72
 if 'calories' not in st.session_state: st.session_state.calories = 0.0
 
-# External Benchmark Data (Comparison Logic)
-GLOBAL_STEP_AVG = 7500 
+# --- 3. SIDEBAR: USER BIO-DATA (New Feature) ---
+with st.sidebar:
+    st.markdown("<h1 style='color:#3b82f6; font-weight:900;'>STRIDE-AI</h1>", unsafe_allow_html=True)
+    
+    st.markdown("### 👤 User Profile")
+    u_age = st.number_input("Age", min_value=10, max_value=100, value=21)
+    u_weight = st.number_input("Weight (kg)", min_value=30, max_value=200, value=70)
+    u_height = st.number_input("Height (cm)", min_value=100, max_value=250, value=175)
+    
+    # Complex Calculation: BMR (Mifflin-St Jeor Equation)
+    bmr = (10 * u_weight) + (6.25 * u_height) - (5 * u_age) + 5
+    
+    st.markdown("---")
+    page = st.radio("RESEARCH MODULES", 
+                    ["[01] Dashboard", "[02] Neural Motion", "[03] AI Health Report"])
+    
+    st.markdown("---")
+    if st.button("🚀 TRIGGER MOTION"):
+        st.session_state.steps += np.random.randint(30, 70)
+        st.session_state.heart_rate = np.random.randint(110, 145)
+        # Dynamic Calorie burn based on weight
+        st.session_state.calories += round((u_weight * 0.04), 2) 
+        st.rerun()
 
-# --- 3. GLOBAL UI STYLING ---
+# --- 4. GLOBAL UI STYLING ---
 st.markdown("""
 <style>
     @import url('https://fonts.googleapis.com/css2?family=Outfit:wght@300;700;900&family=JetBrains+Mono:wght@400&display=swap');
     .stApp { background: #050505; font-family: 'Outfit', sans-serif; color: #e0e0e0; }
-    [data-testid="stSidebar"] { background-color: #0a0a0c !important; border-right: 1px solid #3b82f633; }
     .research-card {
         background: rgba(255, 255, 255, 0.03);
         backdrop-filter: blur(10px);
@@ -32,80 +52,53 @@ st.markdown("""
     }
     .stat-label { font-family: 'JetBrains Mono', monospace; font-size: 0.75rem; color: #3b82f6; letter-spacing: 2px; }
     .stat-value { font-size: 2.8rem; font-weight: 900; margin: 0; color: #ffffff; }
-    .report-box { background: #111; border-left: 5px solid #3b82f6; padding: 25px; border-radius: 15px; border: 1px solid rgba(59, 130, 246, 0.2); }
 </style>
 """, unsafe_allow_html=True)
-
-# --- 4. SIDEBAR ---
-with st.sidebar:
-    st.markdown("<h1 style='color:#3b82f6; font-weight:900;'>STRIDE-AI</h1>", unsafe_allow_html=True)
-    page = st.radio("RESEARCH MODULES", 
-                    ["[01] Dashboard", "[02] Neural Motion", "[03] AI Health Report"])
-    
-    st.markdown("---")
-    st.markdown("### 🎛️ SENSOR EMULATION")
-    if st.button("🚀 TRIGGER MOTION"):
-        st.session_state.steps += np.random.randint(25, 60)
-        st.session_state.heart_rate = np.random.randint(110, 140)
-        st.session_state.calories += round(np.random.uniform(1.5, 3.5), 2)
-        st.rerun()
-    
-    if st.button("🔄 SYSTEM REBOOT"):
-        st.session_state.steps = 0
-        st.session_state.heart_rate = 72
-        st.session_state.calories = 0.0
-        st.rerun()
 
 # --- 5. PAGE: DASHBOARD ---
 if page == "[01] Dashboard":
     st.title("Kinetic Executive Overview")
     
-    col1, col2, col3 = st.columns(3)
-    col1.markdown(f'<div class="research-card"><p class="stat-label">TOTAL STEPS</p><p class="stat-value">{st.session_state.steps}</p></div>', unsafe_allow_html=True)
-    col2.markdown(f'<div class="research-card"><p class="stat-label">LIVE BPM</p><p class="stat-value">{st.session_state.heart_rate}</p></div>', unsafe_allow_html=True)
-    col3.markdown(f'<div class="research-card"><p class="stat-label">KCAL BURN</p><p class="stat-value">{st.session_state.calories}</p></div>', unsafe_allow_html=True)
+    c1, c2, c3, c4 = st.columns(4)
+    c1.markdown(f'<div class="research-card"><p class="stat-label">TOTAL STEPS</p><p class="stat-value">{st.session_state.steps}</p></div>', unsafe_allow_html=True)
+    c2.markdown(f'<div class="research-card"><p class="stat-label">LIVE BPM</p><p class="stat-value">{st.session_state.heart_rate}</p></div>', unsafe_allow_html=True)
+    c3.markdown(f'<div class="research-card"><p class="stat-label">ACTIVE KCAL</p><p class="stat-value">{st.session_state.calories}</p></div>', unsafe_allow_html=True)
+    c4.markdown(f'<div class="research-card"><p class="stat-label">BMR BASE</p><p class="stat-value">{int(bmr)}</p></div>', unsafe_allow_html=True)
 
-    # EXTERNAL INTEGRATION: IFRAME (Live Analytics Clock or Motion Visualization)
-    st.markdown("### 🌐 External Telemetry Feed")
-    # Embedding a clean, professional analog clock/data visualizer
+    # Iframe Integration (World Health Map or Clock)
     st.components.v1.iframe("https://www.zeitverschiebung.net/clock-widget-iframe-v2?language=en&size=medium&timezone=Asia%2FKolkata", height=120)
 
-    # Comparison Graph with External Benchmark
-    st.markdown("### 📊 Global Benchmarking")
-    fig = go.Figure()
-    fig.add_trace(go.Bar(name='Global Avg', x=['Steps'], y=[GLOBAL_STEP_AVG], marker_color='rgba(255,255,255,0.1)'))
-    fig.add_trace(go.Bar(name='Current User', x=['Steps'], y=[st.session_state.steps], marker_color='#3b82f6'))
-    fig.update_layout(template="plotly_dark", barmode='overlay', paper_bgcolor='rgba(0,0,0,0)', plot_bgcolor='rgba(0,0,0,0)', height=300)
-    st.plotly_chart(fig, use_container_width=True)
+    # Hydration Tracker (New Component)
+    st.markdown("### 💧 Real-time Hydration Strategy")
+    water_needed = round((st.session_state.steps / 1000) * 0.25, 2) # 250ml per 1000 steps
+    st.progress(min(water_needed/3.0, 1.0))
+    st.write(f"Based on activity, you need to consume **{water_needed} Liters** of additional water.")
 
-# --- 6. PAGE: AI HEALTH REPORT (DYNAMIC & COMPLEX) ---
+# --- 6. PAGE: AI HEALTH REPORT ---
 elif page == "[03] AI Health Report":
     st.title("🛡️ AI Smart Diagnostic Engine")
     
-    if st.button("🔍 INITIATE DEEP BIO-SCAN"):
-        with st.status("Analyzing Live Metrics...", expanded=True) as status:
+    if st.button("🔍 INITIATE BIO-METRIC SCAN"):
+        with st.status("Analyzing Personal Bio-Data...", expanded=True) as status:
             time.sleep(1)
-            st.write("Fetching Global Health Benchmarks...")
+            st.write(f"Calculating BMR for {u_age}yo Male/Female...")
             time.sleep(1)
-            st.write("Cross-referencing Cardiac Zones...")
-            status.update(label="Scan Complete!", state="complete")
+            st.write("Verifying Gait Symmetry...")
+            status.update(label="Analysis Complete!", state="complete")
 
-        steps = st.session_state.steps
-        bpm = st.session_state.heart_rate
-        
-        # Complex Logic
-        step_diff = GLOBAL_STEP_AVG - steps
-        status_color = "#00ffbd" if steps > GLOBAL_STEP_AVG else "#fbbf24"
+        # Complex Logic based on User Profile
+        target_steps = 10000
+        completion = (st.session_state.steps / target_steps) * 100
         
         st.markdown(f"""
-        <div class="report-box" style="border-left-color: {status_color};">
-            <h2 style="color: {status_color}; margin: 0;">CLINICAL SUMMARY</h2>
+        <div style="background: rgba(255,255,255,0.03); border-left: 5px solid #3b82f6; padding: 25px; border-radius: 15px;">
+            <h2 style="color: #3b82f6; margin: 0;">OFFICIAL HEALTH SUMMARY</h2>
             <hr style="opacity: 0.1; margin: 15px 0;">
-            <p><b>Global Comparison:</b> You are at <b>{int((steps/GLOBAL_STEP_AVG)*100)}%</b> of the international daily average.</p>
-            <p><b>Diagnostic:</b> {'Optimal kinetic volume reached.' if steps > GLOBAL_STEP_AVG else f'Sedentary trend detected. Shortfall of {step_diff} steps.'}</p>
+            <p><b>User Profile:</b> {u_age} years | {u_weight}kg | {u_height}cm</p>
+            <p><b>Activity Score:</b> {int(completion)}% of daily target reached.</p>
             <div style="background: rgba(59, 130, 246, 0.1); padding: 15px; border-radius: 10px; margin-top: 15px;">
-                <b>AI Prescription:</b> Based on {bpm} BPM, your cardiovascular strain is <b>{'High' if bpm > 120 else 'Normal'}</b>. 
-                {'Immediate recovery suggested.' if bpm > 120 else 'Keep maintaining current pace for fat-oxidation.'}
+                <b>AI Prescription:</b> Your BMR is {int(bmr)} kcal. Total energy expenditure today is <b>{int(bmr + st.session_state.calories)} kcal</b>.
+                {'Warning: High BPM detected for your age group.' if st.session_state.heart_rate > (220 - u_age)*0.7 else 'Heart rate is optimal for aerobic conditioning.'}
             </div>
         </div>
         """, unsafe_allow_html=True)
@@ -113,7 +106,8 @@ elif page == "[03] AI Health Report":
 # --- 7. PAGE: NEURAL MOTION ---
 else:
     st.title("Neural Motion Analytics")
-    z = np.linspace(0, 1, 100)
-    fig_3d = go.Figure(data=[go.Scatter3d(x=np.cos(z*10), y=np.sin(z*10), z=z, mode='lines', line=dict(color='#3b82f6', width=8))])
+    # Complexity: Dynamic Spiral based on Steps
+    t = np.linspace(0, 10, 100)
+    fig_3d = go.Figure(data=[go.Scatter3d(x=np.cos(t), y=np.sin(t), z=t, mode='lines', line=dict(color='#3b82f6', width=8))])
     fig_3d.update_layout(scene=dict(bgcolor="black"), paper_bgcolor='black', height=600)
     st.plotly_chart(fig_3d, use_container_width=True)
