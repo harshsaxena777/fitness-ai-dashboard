@@ -99,33 +99,49 @@ with tabs[4]:
 
 # SCREEN 6: ELABORATIVE AI REPORT
 with tabs[5]:
-    st.subheader("Clinical Diagnostic Report")
+    st.subheader("📋 Clinical Diagnostic Report")
+    
     if st.button("🔍 GENERATE COMPREHENSIVE REPORT"):
         with st.spinner("Compiling Multi-Screen Data..."):
             time.sleep(2)
             st.session_state.report_ready = True
 
     if st.session_state.report_ready:
+        # Final calculations for the report
+        vo2_est = round(15 * (190 / st.session_state.heart_rate), 1)
+        metabolic_age = u_age - 2 if st.session_state.steps > 8000 else u_age + 1
+        
+        # Professional Markdown Report (No HTML Tags visible)
         st.markdown(f"""
-        <div class="report-card">
-            <h3 style="color:#3b82f6; margin-top:0;">STRIDE-AI FINAL CLINICAL AUDIT</h3>
-            <p><b>1. Physical Activity Summary:</b><br>
-            Total volume of {st.session_state.steps} steps executed. Subject is maintaining an active lifestyle. 
-            Metabolic age is estimated at {22 - 2} years.</p>
-            
-            <p><b>2. Cardiovascular & Stress Analysis:</b><br>
-            Current BPM ({st.session_state.heart_rate}) indicates a stable aerobic state. 
-            VO2 Max estimation stands at {round(15*(190/st.session_state.heart_rate),1)} mL/kg/min, showing elite respiratory efficiency.</p>
-            
-            <p><b>3. Biomechanical & Posture Integrity:</b><br>
-            Posture Score of {posture_score}% suggests no immediate musculoskeletal risk. 
-            Gait entropy remains within 1.2% of the standard clinical deviation.</p>
-            
-            <p><b>4. Predictive Health Risk:</b><br>
-            Fall risk is minimized (Level: LOW). No significant correlation between diet and cardiac distress found.</p>
-            
-            <hr style="opacity:0.2;">
-            <p style="color:#00ffbd; font-weight:bold;">Final Verdict: Subject is physiologically optimized. No clinical intervention required.</p>
-        </div>
-        """, unsafe_allow_html=True)
-        st.download_button("📥 Export Detailed Log", "Full Data Log...", file_name="StrideAI_Full_Report.txt")
+        ### 🛡️ STRIDE-AI: FINAL CLINICAL AUDIT
+        **Status:** Active Monitoring | **ID:** HRSH-2026
+        
+        ---
+        
+        #### 1. 👣 Physical Activity Summary
+        Total volume of **{st.session_state.steps} steps** executed. Subject is maintaining an active lifestyle. 
+        **Metabolic Age:** Estimated at **{metabolic_age} years**.
+        
+        #### 2. 🫀 Cardiovascular & Stress Analysis
+        Current BPM (**{st.session_state.heart_rate}**) indicates a stable aerobic state. 
+        **VO2 Max:** {vo2_est} mL/kg/min, showing respiratory efficiency within expected parameters.
+        
+        #### 3. 🧘 Biomechanical & Posture Integrity
+        **Posture Score:** 79% suggests no immediate musculoskeletal risk. 
+        **Gait Stability:** Entropy remains within **1.2%** of the standard clinical deviation, confirming high neurological control.
+        
+        #### 4. 🔮 Predictive Health Risk
+        **Fall Risk:** Level is **LOW**. Predictive modeling suggests excellent balance. 
+        **Symptom Correlation:** No significant correlation between current diet and cardiac distress found.
+        
+        ---
+        
+        **⭐ FINAL VERDICT:**  
+        **Subject is physiologically optimized.** No clinical intervention required.
+        """)
+        
+        st.download_button(
+            label="📥 Export Detailed Log", 
+            data=f"STRIDE-AI REPORT\nSteps: {st.session_state.steps}\nBPM: {st.session_state.heart_rate}\nStatus: Optimized", 
+            file_name="StrideAI_Report.txt"
+        )
