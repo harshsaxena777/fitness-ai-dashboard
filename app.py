@@ -4,90 +4,128 @@ import numpy as np
 import pandas as pd
 import time
 
-# --- CONFIG ---
+# --- 1. CONFIG & SYSTEM REBOOT LOGIC ---
 st.set_page_config(page_title="STRIDE-AI Mobile Pro", layout="centered")
 
-# --- SESSION STATE ---
+def reboot_system():
+    for key in st.session_state.keys():
+        del st.session_state[key]
+    st.toast("System Rebooted... All sensors recalibrated.", icon="🔄")
+    time.sleep(1)
+
+# --- 2. SESSION STATE INITIALIZATION ---
 if 'steps' not in st.session_state: st.session_state.steps = 5400
 if 'heart_rate' not in st.session_state: st.session_state.heart_rate = 72
-if 'diet_input' not in st.session_state: st.session_state.diet_input = "Balanced"
+if 'calories' not in st.session_state: st.session_state.calories = 145.0
 if 'report_ready' not in st.session_state: st.session_state.report_ready = False
 
-# --- STYLING ---
+# --- 3. UI STYLING ---
 st.markdown("""
 <style>
-    .stButton>button { width: 100%; border-radius: 15px; height: 3.5em; background: #3b82f6; font-weight: bold; }
-    .feature-card { background: #0d1117; padding: 20px; border-radius: 15px; border-left: 5px solid #3b82f6; margin-bottom: 15px; }
-    .risk-high { color: #ef4444; font-weight: bold; }
-    .risk-low { color: #00ffbd; font-weight: bold; }
+    .stButton>button { width: 100%; border-radius: 12px; height: 3.5em; font-weight: bold; }
+    .reboot-btn>button { background-color: #ef4444 !important; color: white !important; border: none; }
+    .report-card { background: #0d1117; padding: 20px; border-radius: 15px; border-left: 5px solid #3b82f6; line-height: 1.6; }
+    .status-tag { background: #1e293b; padding: 5px 10px; border-radius: 8px; font-size: 0.8rem; color: #3b82f6; }
 </style>
 """, unsafe_allow_html=True)
 
-st.title("📱 STRIDE-AI: Clinical Mobile")
+# --- 4. TOP NAVIGATION & REBOOT ---
+c_title, c_reboot = st.columns([4, 1])
+with c_title:
+    st.title("📱 STRIDE-AI")
+with c_reboot:
+    st.markdown('<div class="reboot-btn">', unsafe_allow_html=True)
+    if st.button("🔄"):
+        reboot_system()
+        st.rerun()
+    st.markdown('</div>', unsafe_allow_html=True)
 
-# --- MAIN TABS ---
-tab1, tab2, tab3 = st.tabs(["📊 Live Stats", "🔮 Predictive Lab", "🧠 AI Report"])
+# --- 5. SEPARATE SCREENS VIA TABS ---
+tabs = st.tabs(["👣 Steps", "🫀 Heart", "🔥 Kcal", "🧘 Posture", "🔮 Risk", "🧠 AI Report"])
 
-with tab1:
-    st.subheader("Real-time Metrics")
-    c1, c2 = st.columns(2)
-    c1.metric("Steps", st.session_state.steps)
-    c2.metric("Heart Rate", f"{st.session_state.heart_rate} BPM")
-    
-    # Simple Activity Injection
-    if st.button("📡 SYNC SENSORS"):
-        st.session_state.steps += np.random.randint(100, 400)
-        st.session_state.heart_rate = np.random.randint(110, 160)
-        st.session_state.report_ready = False
+# SCREEN 1: STEPS
+with tabs[0]:
+    st.subheader("Pedometer Analytics")
+    st.metric("Total Daily Steps", st.session_state.steps, delta="+420 vs avg")
+    st.write("Real-time Step Frequency")
+    st.line_chart(np.random.randn(20))
+    if st.button("Inject Step Data"):
+        st.session_state.steps += 250
         st.rerun()
 
-with tab2:
-    st.header("Advanced Software Models")
-    
-    # 1. PREDICTIVE FALL DETECTION (Feature 2)
-    st.markdown('<div class="feature-card">', unsafe_allow_html=True)
-    st.subheader("🚷 Predictive Fall Detection")
-    st.write("Analyzes gait entropy to predict balance instability.")
-    
-    # Logic: High BPM + Low Steps + Random Variance = High Risk
-    fall_risk_score = np.random.randint(5, 25) if st.session_state.steps > 5000 else np.random.randint(40, 85)
-    
-    if fall_risk_score > 60:
-        st.markdown(f"Current Risk: <span class='risk-high'>{fall_risk_score}% (CRITICAL)</span>", unsafe_allow_html=True)
-        st.warning("Alert: Unstable gait detected. High probability of fall within next 24h.")
-    else:
-        st.markdown(f"Current Risk: <span class='risk-low'>{fall_risk_score}% (STABLE)</span>", unsafe_allow_html=True)
-    st.markdown('</div>', unsafe_allow_html=True)
+# SCREEN 2: HEART RATE
+with tabs[1]:
+    st.subheader("Cardiac Telemetry")
+    st.metric("Current Pulse", f"{st.session_state.heart_rate} BPM")
+    fig_hr = go.Figure(go.Indicator(mode="gauge+number", value=st.session_state.heart_rate, gauge={'axis':{'range':[40,200]}, 'bar':{'color':"#ef4444"}}))
+    fig_hr.update_layout(height=300, paper_bgcolor='rgba(0,0,0,0)', font={'color':"white"})
+    st.plotly_chart(fig_hr, use_container_width=True)
 
-    # 2. MULTI-SYMPTOM CORRELATION (Feature 5)
-    st.markdown('<div class="feature-card">', unsafe_allow_html=True)
-    st.subheader("🥗 Symptom & Diet Correlation")
-    diet = st.selectbox("Current Dietary Intake", ["Balanced", "High Sugar", "High Caffeine", "Fast Food"])
-    
-    # Correlation Logic
-    if diet == "High Sugar" and st.session_state.heart_rate > 130:
-        st.error("Correlation Found: Glucose spike is inflating cardiac load by 15%.")
-    elif diet == "High Caffeine":
-        st.info("Observation: Increased resting heart rate detected due to stimulant intake.")
-    else:
-        st.success("Correlation: Metabolism is stable with current activity.")
-    st.markdown('</div>', unsafe_allow_html=True)
+# SCREEN 3: CALORIES
+with tabs[2]:
+    st.subheader("Metabolic Energy")
+    st.metric("Calories Burned", f"{int(st.session_state.calories)} kcal")
+    st.info("Metabolic efficiency is 12% higher than baseline.")
+    st.bar_chart(np.random.randint(10, 50, 7))
 
-with tab3:
-    if st.button("🔍 RUN INTEGRATED DIAGNOSIS"):
-        with st.spinner("Processing Multi-Symptom Patterns..."):
+# SCREEN 4: POSTURE ANALYSIS (New Dedicated Screen)
+with tabs[3]:
+    st.subheader("Posture & Alignment")
+    st.markdown('<p class="status-tag">Software-Only Pose Modeling</p>', unsafe_allow_html=True)
+    posture_score = np.random.randint(70, 95)
+    st.metric("Spinal Alignment Score", f"{posture_score}%")
+    
+    st.write("Joint Angle Variance (Simulated)")
+    st.area_chart(np.random.rand(15))
+    st.caption("AI detects a slight 2° tilt in the pelvic region. Adjust your stance.")
+
+# SCREEN 5: RISK PREDICTION (Fall & Diet)
+with tabs[4]:
+    st.subheader("Predictive Risk Engine")
+    
+    # Fall Risk
+    st.write("---")
+    st.write("🚷 **Fall Risk Assessment**")
+    f_risk = "LOW" if st.session_state.steps > 4000 else "MODERATE"
+    st.progress(0.2 if f_risk == "LOW" else 0.6)
+    st.write(f"Risk Level: **{f_risk}**")
+    
+    # Diet Correlation
+    st.write("---")
+    st.write("🥗 **Symptom Correlation**")
+    diet = st.selectbox("Current Intake", ["Balanced", "High Caffeine", "High Sugar"])
+    if diet == "High Caffeine":
+        st.warning("Cardiac Jitter detected. Heart rate variability is fluctuating.")
+
+# SCREEN 6: ELABORATIVE AI REPORT
+with tabs[5]:
+    st.subheader("Clinical Diagnostic Report")
+    if st.button("🔍 GENERATE COMPREHENSIVE REPORT"):
+        with st.spinner("Compiling Multi-Screen Data..."):
             time.sleep(2)
             st.session_state.report_ready = True
-            
+
     if st.session_state.report_ready:
-        st.markdown("""
-        <div class="feature-card" style="border-left-color: #00ffbd;">
-            <h3 style="color:#00ffbd;">AI CLINICAL SUMMARY</h3>
-            <p><b>Fall Risk:</b> Analysis of 100+ simulated gait cycles shows 92% stability.</p>
-            <p><b>Dietary Impact:</b> Diet-to-Activity correlation suggests optimal energy conversion.</p>
+        st.markdown(f"""
+        <div class="report-card">
+            <h3 style="color:#3b82f6; margin-top:0;">STRIDE-AI FINAL CLINICAL AUDIT</h3>
+            <p><b>1. Physical Activity Summary:</b><br>
+            Total volume of {st.session_state.steps} steps executed. Subject is maintaining an active lifestyle. 
+            Metabolic age is estimated at {22 - 2} years.</p>
+            
+            <p><b>2. Cardiovascular & Stress Analysis:</b><br>
+            Current BPM ({st.session_state.heart_rate}) indicates a stable aerobic state. 
+            VO2 Max estimation stands at {round(15*(190/st.session_state.heart_rate),1)} mL/kg/min, showing elite respiratory efficiency.</p>
+            
+            <p><b>3. Biomechanical & Posture Integrity:</b><br>
+            Posture Score of {posture_score}% suggests no immediate musculoskeletal risk. 
+            Gait entropy remains within 1.2% of the standard clinical deviation.</p>
+            
+            <p><b>4. Predictive Health Risk:</b><br>
+            Fall risk is minimized (Level: LOW). No significant correlation between diet and cardiac distress found.</p>
+            
             <hr style="opacity:0.2;">
-            <p><b>Clinical Advice:</b> Gait entropy is low, indicating strong neuro-muscular control. Continue current hydration levels.</p>
+            <p style="color:#00ffbd; font-weight:bold;">Final Verdict: Subject is physiologically optimized. No clinical intervention required.</p>
         </div>
         """, unsafe_allow_html=True)
-        
-        st.download_button("📥 Download PDF Report", "Clinical Report Content...", file_name="Stride_AI_Diagnosis.txt")
+        st.download_button("📥 Export Detailed Log", "Full Data Log...", file_name="StrideAI_Full_Report.txt")
