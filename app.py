@@ -1,129 +1,118 @@
 import streamlit as st
 import plotly.graph_objects as go
-import plotly.express as px  # <--- Yeh line Error fix karegi
+import plotly.express as px
 import numpy as np
 import pandas as pd
 import time
 
-# --- 1. CONFIG & REBOOT ---
-st.set_page_config(page_title="STRIDE-AI Pro Account", layout="centered")
+# --- 1. SYSTEM CONFIG & REBOOT LOGIC ---
+st.set_page_config(page_title="STRIDE-AI Mobile Pro", layout="centered")
 
-# --- 2. SESSION STATE (Virtual Database) ---
+# Function to wipe all data and go back to login
+def reboot_system():
+    for key in list(st.session_state.keys()):
+        del st.session_state[key]
+    st.toast("System Rebooting... Sensors Cleared.", icon="🔄")
+    time.sleep(1)
+
+# --- 2. MOBILE CSS WRAPPER ---
+st.markdown("""
+    <style>
+    .main { max-width: 420px; margin: 0 auto; background-color: #0e1117; }
+    header, footer {visibility: hidden;}
+    .reboot-container { text-align: right; margin-bottom: -40px; }
+    .stButton>button { width: 100%; border-radius: 12px; height: 3.5em; font-weight: bold; }
+    .report-card { background: #161b22; padding: 15px; border-radius: 12px; border-left: 6px solid #3b82f6; }
+    </style>
+""", unsafe_allow_html=True)
+
+# --- 3. SESSION STATE INITIALIZATION ---
 if 'logged_in' not in st.session_state: st.session_state.logged_in = False
-if 'user_mail' not in st.session_state: st.session_state.user_mail = ""
-if 'steps' not in st.session_state: st.session_state.steps = 7268 # Current Audit Data
+if 'steps' not in st.session_state: st.session_state.steps = 7268
 if 'heart_rate' not in st.session_state: st.session_state.heart_rate = 137
-if 'u_age' not in st.session_state: st.session_state.u_age = 22
 if 'report_ready' not in st.session_state: st.session_state.report_ready = False
 
-# --- 3. LOGIN INTERFACE ---
+# --- 4. LOGIN SCREEN ---
 if not st.session_state.logged_in:
-    st.title("🔐 STRIDE-AI Portal")
-    st.markdown("Enter your credentials to sync with clinical cloud.")
-    
-    with st.form("login_form"):
-        email = st.text_input("Email ID", placeholder="harsh@srms.ac.in")
-        mobile = st.text_input("Mobile Number", placeholder="+91-XXXXX-XXXXX")
-        submitted = st.form_submit_button("Login / Create Account")
-        
-        if submitted:
-            if "@" in email and len(mobile) >= 10:
+    st.markdown("<h2 style='text-align: center;'>🔐 STRIDE-AI</h2>", unsafe_allow_html=True)
+    with st.container():
+        user = st.text_input("Clinical Email")
+        pwd = st.text_input("Password", type="password")
+        if st.button("Access Dashboard"):
+            if "@" in user:
                 st.session_state.logged_in = True
-                st.session_state.user_mail = email
                 st.rerun()
-            else:
-                st.error("Invalid Email or Mobile Number.")
     st.stop()
 
-# --- 4. DASHBOARD UI ---
-st.title("📱 STRIDE-AI Pro")
-st.caption(f"Connected: {st.session_state.user_mail}")
+# --- 5. MAIN APP HEADER & REBOOT ---
+st.markdown('<div class="reboot-container">', unsafe_allow_html=True)
+if st.button("🔄", help="System Reboot"):
+    reboot_system()
+    st.rerun()
+st.markdown('</div>', unsafe_allow_html=True)
 
-tabs = st.tabs(["⚙️ Profile", "👣 Activity", "🫀 Cardiac", "🧘 Posture", "🧠 AI Audit"])
+st.markdown("<h3 style='text-align: center;'>📱 STRIDE-AI PRO</h3>", unsafe_allow_html=True)
 
-# SCREEN 1: SETUP
+# --- 6. MULTI-SCREEN TABS ---
+tabs = st.tabs(["👣 Steps", "🫀 Heart", "🧘 Posture", "🔮 Risk", "🧠 Audit"])
+
+# SCREEN 1: STEPS
 with tabs[0]:
-    st.subheader("Subject Calibration")
-    st.session_state.u_age = st.slider("Select Age", 18, 80, st.session_state.u_age)
-    st.number_input("Weight (kg)", 40, 150, 70)
-    st.info("System is optimizing algorithms for your age group.")
+    st.metric("Total Steps", st.session_state.steps, delta="+12% Sync")
+    st.bar_chart(np.random.randint(200, 800, 10))
+    if st.button("🔄 Refresh Step Data"):
+        st.session_state.steps += np.random.randint(100, 300)
+        st.toast("Steps Updated!")
+        st.rerun()
 
-# SCREEN 2: STEPS & ANALYTICS
+# SCREEN 2: HEART RATE
 with tabs[1]:
-    st.subheader("Kinetic Volume")
-    c1, c2 = st.columns(2)
-    c1.metric("Steps", st.session_state.steps)
-    c2.metric("Target", "10,000")
-    
-    # Advanced Bar Chart
-    step_history = pd.DataFrame(np.random.randint(200, 800, 12), columns=['Steps/Hour'])
-    st.bar_chart(step_history)
-
-# SCREEN 3: HEART RATE (FIXED px.line ERROR)
-with tabs[2]:
-    st.subheader("Cardiac Stress Test")
-    st.metric("Pulse", f"{st.session_state.heart_rate} BPM")
-    
-    # Waveform Graph
-    t = np.linspace(0, 10, 100)
-    y = np.sin(t) + np.random.normal(0, 0.05, 100)
-    fig_hr = px.line(x=t, y=y, title="Electro-Kinetic Pulse Pattern", template="plotly_dark")
-    fig_hr.update_layout(xaxis_title="Time (s)", yaxis_title="Amplitude")
+    st.metric("Current Pulse", f"{st.session_state.heart_rate} BPM")
+    t = np.linspace(0, 10, 50)
+    y = np.sin(t) + np.random.normal(0, 0.1, 50)
+    fig_hr = px.line(x=t, y=y, template="plotly_dark")
+    fig_hr.update_layout(height=250, margin=dict(l=0,r=0,t=0,b=0))
     st.plotly_chart(fig_hr, use_container_width=True)
+    if st.button("⚡ Live Pulse Sync"):
+        st.session_state.heart_rate = np.random.randint(110, 155)
+        st.rerun()
 
-# SCREEN 4: POSTURE
+# SCREEN 3: POSTURE
 with tabs[3]:
-    st.subheader("Biomechanical Integrity")
+    st.subheader("Posture Analysis")
     st.metric("Alignment Score", "79%")
     st.progress(0.79)
-    st.write("Visualizing Gait Symmetry...")
-    st.area_chart(np.random.rand(20))
+    st.caption("AI Pose Modeling Synchronized.")
 
-# SCREEN 5: ELABORATIVE AI REPORT
+# SCREEN 4: RISK
+with tabs[3]:
+    st.subheader("Predictive Risk")
+    st.write("Fall Risk: **LOW**")
+    st.write("Cardiac Stress: **NORMAL**")
+
+# SCREEN 5: AI AUDIT REPORT
 with tabs[4]:
-    st.subheader("📋 Final Clinical Audit")
-    
-    if st.button("🔍 RUN AI DIAGNOSIS"):
-        with st.spinner("Analyzing Multi-System Data..."):
-            time.sleep(2)
+    if st.button("🔍 GENERATE CLINICAL AUDIT"):
+        with st.spinner("Analyzing Multi-Screen Data..."):
+            time.sleep(1.5)
             st.session_state.report_ready = True
-
+            
     if st.session_state.report_ready:
-        # Final Calculation
-        m_age = st.session_state.u_age - 2 if st.session_state.steps > 7000 else st.session_state.u_age + 1
-        vo2_est = 20.8 # Based on your last audit
-        
-        # 📊 Radar Visualization (The "Advance" Factor)
-        categories = ['Gait Stability', 'Cardiac Load', 'Metabolism', 'Activity', 'Postural Balance']
-        fig_radar = go.Figure(data=go.Scatterpolar(
-          r=[85, 70, 90, 75, 79],
-          theta=categories,
-          fill='toself',
-          line_color='#3b82f6'
-        ))
-        fig_radar.update_layout(polar=dict(radialaxis=dict(visible=True, range=[0, 100])), showlegend=False, paper_bgcolor='rgba(0,0,0,0)')
+        # Radar Chart
+        categories = ['Stability', 'Cardiac', 'Metabolism', 'Posture']
+        fig_radar = go.Figure(data=go.Scatterpolar(r=[85, 70, 90, 79], theta=categories, fill='toself'))
+        fig_radar.update_layout(polar=dict(radialaxis=dict(visible=False)), height=250, margin=dict(l=40,r=40,t=20,b=20))
         st.plotly_chart(fig_radar, use_container_width=True)
-
+        
         st.markdown(f"""
-        ### STRIDE-AI FINAL CLINICAL AUDIT
-        
-        **1. Physical Activity Summary:**  
-        Total volume of **{st.session_state.steps} steps** executed. Subject is maintaining an active lifestyle. **Metabolic age** is estimated at **{m_age} years**.
-        
-        **2. Cardiovascular & Stress Analysis:**  
-        Current BPM (**{st.session_state.heart_rate}**) indicates a stable aerobic state. **VO2 Max** estimation stands at **{vo2_est} mL/kg/min**.
-        
-        **3. Biomechanical & Posture Integrity:**  
-        **Posture Score** of **79%** suggests no immediate musculoskeletal risk. **Gait entropy** remains within clinical deviation.
-        
-        **4. Predictive Health Risk:**  
-        **Fall risk** is minimized (Level: **LOW**). No significant correlation between diet and cardiac distress found.
-        
-        ---
-        **⭐ FINAL VERDICT:**  
-        Subject is physiologically optimized. No clinical intervention required.
-        """)
-        
-        if st.button("Logout"):
-            st.session_state.logged_in = False
-            st.rerun()
+        <div class="report-card">
+        **Audit Results:**  
+        - **Total Steps:** {st.session_state.steps}  
+        - **Pulse:** {st.session_state.heart_rate} BPM  
+        - **Verdict:** Subject is Optimized.
+        </div>
+        """, unsafe_allow_html=True)
+
+if st.button("Logout"):
+    st.session_state.logged_in = False
+    st.rerun()
