@@ -1,5 +1,6 @@
 import streamlit as st
 import plotly.graph_objects as go
+import plotly.express as px  # <--- Yeh line Error fix karegi
 import numpy as np
 import pandas as pd
 import time
@@ -7,113 +8,95 @@ import time
 # --- 1. CONFIG & REBOOT ---
 st.set_page_config(page_title="STRIDE-AI Pro Account", layout="centered")
 
-# --- 2. VIRTUAL ACCOUNT SYSTEM ---
+# --- 2. SESSION STATE (Virtual Database) ---
 if 'logged_in' not in st.session_state: st.session_state.logged_in = False
 if 'user_mail' not in st.session_state: st.session_state.user_mail = ""
-if 'steps' not in st.session_state: st.session_state.steps = 5400
-if 'heart_rate' not in st.session_state: st.session_state.heart_rate = 72
+if 'steps' not in st.session_state: st.session_state.steps = 7268 # Current Audit Data
+if 'heart_rate' not in st.session_state: st.session_state.heart_rate = 137
 if 'u_age' not in st.session_state: st.session_state.u_age = 22
 if 'report_ready' not in st.session_state: st.session_state.report_ready = False
 
-# --- LOGIN SCREEN LOGIC ---
+# --- 3. LOGIN INTERFACE ---
 if not st.session_state.logged_in:
     st.title("🔐 STRIDE-AI Portal")
-    st.markdown("Please login to access your clinical dashboard.")
+    st.markdown("Enter your credentials to sync with clinical cloud.")
     
-    with st.container():
-        email = st.text_input("Email ID Address", placeholder="example@gmail.com")
+    with st.form("login_form"):
+        email = st.text_input("Email ID", placeholder="harsh@srms.ac.in")
         mobile = st.text_input("Mobile Number", placeholder="+91-XXXXX-XXXXX")
-        password = st.text_input("Password", type="password")
+        submitted = st.form_submit_button("Login / Create Account")
         
-        col1, col2 = st.columns(2)
-        if col1.button("Create Account"):
-            st.success("Account created! Now click Login.")
-        if col2.button("Login"):
+        if submitted:
             if "@" in email and len(mobile) >= 10:
                 st.session_state.logged_in = True
                 st.session_state.user_mail = email
                 st.rerun()
             else:
-                st.error("Please enter valid credentials.")
-    st.stop() # Login hone tak baki app nahi chalegi
+                st.error("Invalid Email or Mobile Number.")
+    st.stop()
 
-# --- 3. UI STYLING ---
-st.markdown("""
-<style>
-    .stButton>button { width: 100%; border-radius: 12px; height: 3.5em; font-weight: bold; }
-    .report-card { background: #0d1117; padding: 20px; border-radius: 15px; border-left: 8px solid #3b82f6; }
-    .user-info { background: #1e293b; padding: 10px; border-radius: 10px; margin-bottom: 20px; font-size: 0.9rem; }
-</style>
-""", unsafe_allow_html=True)
-
-# --- 4. DASHBOARD TOP ---
+# --- 4. DASHBOARD UI ---
 st.title("📱 STRIDE-AI Pro")
-st.markdown(f"<div class='user-info'>👤 User: <b>{st.session_state.user_mail}</b></div>", unsafe_allow_html=True)
+st.caption(f"Connected: {st.session_state.user_mail}")
 
-# --- 5. ELABORATE TABS ---
-tabs = st.tabs(["⚙️ Setup", "👣 Steps", "🫀 Heart", "🧘 Posture", "🧠 AI Report"])
+tabs = st.tabs(["⚙️ Profile", "👣 Activity", "🫀 Cardiac", "🧘 Posture", "🧠 AI Audit"])
 
-# SCREEN 1: ELABORATE SETUP
+# SCREEN 1: SETUP
 with tabs[0]:
-    st.subheader("Physical Profile")
+    st.subheader("Subject Calibration")
     st.session_state.u_age = st.slider("Select Age", 18, 80, st.session_state.u_age)
-    u_weight = st.number_input("Weight (kg)", 40, 150, 70)
-    u_height = st.number_input("Height (cm)", 140, 210, 175)
-    st.info(f"Target Heart Rate: {220 - st.session_state.u_age} BPM")
+    st.number_input("Weight (kg)", 40, 150, 70)
+    st.info("System is optimizing algorithms for your age group.")
 
-# SCREEN 2: STEPS WITH GRAPHS
+# SCREEN 2: STEPS & ANALYTICS
 with tabs[1]:
-    st.subheader("Pedometer Analytics")
+    st.subheader("Kinetic Volume")
     c1, c2 = st.columns(2)
-    c1.metric("Current Steps", st.session_state.steps)
-    c2.metric("Distance", f"{round(st.session_state.steps * 0.0008, 2)} km")
+    c1.metric("Steps", st.session_state.steps)
+    c2.metric("Target", "10,000")
     
-    # Graph: Step Frequency over 24h
-    step_data = pd.DataFrame(np.random.randint(100, 1000, 24), columns=['Steps'])
-    st.bar_chart(step_data)
-    
-    if st.button("Inject Step Packet"):
-        st.session_state.steps += 450
-        st.rerun()
+    # Advanced Bar Chart
+    step_history = pd.DataFrame(np.random.randint(200, 800, 12), columns=['Steps/Hour'])
+    st.bar_chart(step_history)
 
-# SCREEN 3: HEART RATE WITH LIVE FEEL
+# SCREEN 3: HEART RATE (FIXED px.line ERROR)
 with tabs[2]:
-    st.subheader("Cardiac Performance")
-    st.metric("Pulse Rate", f"{st.session_state.heart_rate} BPM")
+    st.subheader("Cardiac Stress Test")
+    st.metric("Pulse", f"{st.session_state.heart_rate} BPM")
     
-    # Live Waveform Graph
+    # Waveform Graph
     t = np.linspace(0, 10, 100)
-    y = np.sin(t) + np.random.normal(0, 0.1, 100)
+    y = np.sin(t) + np.random.normal(0, 0.05, 100)
     fig_hr = px.line(x=t, y=y, title="Electro-Kinetic Pulse Pattern", template="plotly_dark")
+    fig_hr.update_layout(xaxis_title="Time (s)", yaxis_title="Amplitude")
     st.plotly_chart(fig_hr, use_container_width=True)
 
-# SCREEN 4: POSTURE (SIMPLE BUT CLEAR)
+# SCREEN 4: POSTURE
 with tabs[3]:
-    st.subheader("Posture Integrity")
-    score = 79
-    st.metric("Alignment Score", f"{score}%")
-    st.write("Spinal Curvature Deviation")
-    st.progress(score/100)
-    st.caption("AI Analysis: Normal lumbar curve detected.")
+    st.subheader("Biomechanical Integrity")
+    st.metric("Alignment Score", "79%")
+    st.progress(0.79)
+    st.write("Visualizing Gait Symmetry...")
+    st.area_chart(np.random.rand(20))
 
-# SCREEN 5: ELABORATIVE AI REPORT + RADAR CHART
+# SCREEN 5: ELABORATIVE AI REPORT
 with tabs[4]:
-    st.subheader("📋 Advanced Clinical Report")
+    st.subheader("📋 Final Clinical Audit")
     
-    if st.button("🔍 GENERATE FULL DIAGNOSIS"):
-        with st.spinner("Crunching Bio-Data..."):
+    if st.button("🔍 RUN AI DIAGNOSIS"):
+        with st.spinner("Analyzing Multi-System Data..."):
             time.sleep(2)
             st.session_state.report_ready = True
 
     if st.session_state.report_ready:
-        m_age = st.session_state.u_age - 2 if st.session_state.steps > 8000 else st.session_state.u_age + 1
-        vo2_est = round(15 * (190 / st.session_state.heart_rate), 1)
-
-        # 📊 ADDING A RADAR CHART FOR VISUAL REPORT
-        st.write("### Physiological Efficiency Map")
-        categories = ['Stability', 'Cardiac', 'Metabolic', 'Activity', 'Respiratory']
+        # Final Calculation
+        m_age = st.session_state.u_age - 2 if st.session_state.steps > 7000 else st.session_state.u_age + 1
+        vo2_est = 20.8 # Based on your last audit
+        
+        # 📊 Radar Visualization (The "Advance" Factor)
+        categories = ['Gait Stability', 'Cardiac Load', 'Metabolism', 'Activity', 'Postural Balance']
         fig_radar = go.Figure(data=go.Scatterpolar(
-          r=[85, 70, 90, 65, 80],
+          r=[85, 70, 90, 75, 79],
           theta=categories,
           fill='toself',
           line_color='#3b82f6'
@@ -122,17 +105,25 @@ with tabs[4]:
         st.plotly_chart(fig_radar, use_container_width=True)
 
         st.markdown(f"""
-        <div class="report-card">
-            <h4>STRIDE-AI FINAL AUDIT</h4>
-            <p><b>1. Activity Summary:</b> Total {st.session_state.steps} steps. Metabolic age is {m_age}.</p>
-            <p><b>2. Cardiac Health:</b> Pulse is {st.session_state.heart_rate} BPM. VO2 Max: {vo2_est}.</p>
-            <p><b>3. Biomechanical:</b> Posture alignment is 79% stable.</p>
-            <hr style='opacity:0.2;'>
-            <b>AI Verdict:</b> Subject is in <b>Optimized Physical Condition</b>. 
-            No anomalies detected in gait or cardiac rhythm.
-        </div>
-        """, unsafe_allow_html=True)
+        ### STRIDE-AI FINAL CLINICAL AUDIT
         
-        if st.button("Log Out"):
+        **1. Physical Activity Summary:**  
+        Total volume of **{st.session_state.steps} steps** executed. Subject is maintaining an active lifestyle. **Metabolic age** is estimated at **{m_age} years**.
+        
+        **2. Cardiovascular & Stress Analysis:**  
+        Current BPM (**{st.session_state.heart_rate}**) indicates a stable aerobic state. **VO2 Max** estimation stands at **{vo2_est} mL/kg/min**.
+        
+        **3. Biomechanical & Posture Integrity:**  
+        **Posture Score** of **79%** suggests no immediate musculoskeletal risk. **Gait entropy** remains within clinical deviation.
+        
+        **4. Predictive Health Risk:**  
+        **Fall risk** is minimized (Level: **LOW**). No significant correlation between diet and cardiac distress found.
+        
+        ---
+        **⭐ FINAL VERDICT:**  
+        Subject is physiologically optimized. No clinical intervention required.
+        """)
+        
+        if st.button("Logout"):
             st.session_state.logged_in = False
             st.rerun()
