@@ -4,98 +4,92 @@ import numpy as np
 import pandas as pd
 import time
 
-# --- 1. SYSTEM CONFIG ---
-st.set_page_config(page_title="STRIDE-AI Pro Account", layout="centered")
-
-# --- UPDATED REBOOT LOGIC (Only this part is changed) ---
-def reboot_system():
-    # Saare session keys ko delete karna
-    for key in list(st.session_state.keys()):
-        del st.session_state[key]
-    # Initial state par reset karna
-    st.toast("System Rebooting... Clearing User Cache", icon="🔄")
-    time.sleep(1.5)
-    st.rerun()
+# --- 1. SYSTEM CONFIG & REBOOT ---
+st.set_page_config(page_title="STRIDE-AI Mobile Pro", layout="centered")
 
 # --- 2. SESSION STATE INITIALIZATION ---
-if 'logged_in' not in st.session_state: st.session_state.logged_in = False
-if 'user_mail' not in st.session_state: st.session_state.user_mail = ""
+# Age ko session state mein rakho taaki NameError na aaye
+if 'u_age' not in st.session_state: st.session_state.u_age = 22 
 if 'steps' not in st.session_state: st.session_state.steps = 5400
 if 'heart_rate' not in st.session_state: st.session_state.heart_rate = 72
-if 'u_age' not in st.session_state: st.session_state.u_age = 22
 if 'report_ready' not in st.session_state: st.session_state.report_ready = False
-
-# --- LOGIN SCREEN ---
-if not st.session_state.logged_in:
-    st.title("🔐 STRIDE-AI Portal")
-    email = st.text_input("Email ID Address")
-    mobile = st.text_input("Mobile Number")
-    password = st.text_input("Password", type="password")
-    if st.button("Login"):
-        if "@" in email:
-            st.session_state.logged_in = True
-            st.session_state.user_mail = email
-            st.rerun()
-    st.stop()
 
 # --- 3. UI STYLING ---
 st.markdown("""
 <style>
     .stButton>button { width: 100%; border-radius: 12px; height: 3.5em; font-weight: bold; }
-    .reboot-container>button { background-color: #ef4444 !important; color: white !important; }
+    .report-card { background: #0d1117; padding: 20px; border-radius: 15px; border-left: 5px solid #3b82f6; }
 </style>
 """, unsafe_allow_html=True)
 
-# --- 4. TOP NAV & UPDATED REBOOT BUTTON ---
-c_title, c_reboot = st.columns([4, 1])
-with c_title:
-    st.title("📱 STRIDE-AI Pro")
-with c_reboot:
-    st.markdown('<div class="reboot-container">', unsafe_allow_html=True)
-    if st.button("🔄"):
-        reboot_system() # Updated Logic Called Here
-    st.markdown('</div>', unsafe_allow_html=True)
+# --- 4. TOP NAV ---
+st.title("📱 STRIDE-AI")
 
-st.markdown(f"👤 User: **{st.session_state.user_mail}**")
-
-# --- 5. TABS (As it is, no changes) ---
+# --- 5. TABS ---
 tabs = st.tabs(["⚙️ Setup", "👣 Steps", "🫀 Heart", "🧘 Posture", "🧠 AI Report"])
 
-# --- Setup Tab ---
+# SCREEN 0: SETUP (Age input yahan se lo)
 with tabs[0]:
+    st.subheader("Subject Profile")
+    # Slider ki value seedha session state mein update hogi
     st.session_state.u_age = st.slider("Select Age", 18, 80, st.session_state.u_age)
+    st.info(f"System calibrated for Age: {st.session_state.u_age}")
 
-# --- Steps Tab ---
+# SCREEN 1: STEPS
 with tabs[1]:
-    st.metric("Current Steps", st.session_state.steps)
-    if st.button("Inject Step Packet"):
-        st.session_state.steps += 450
+    st.subheader("Pedometer")
+    st.metric("Steps", st.session_state.steps)
+    if st.button("Inject Step Data"):
+        st.session_state.steps += 500
+        st.session_state.report_ready = False
         st.rerun()
 
-# --- Heart Tab ---
+# SCREEN 2: HEART RATE
 with tabs[2]:
-    st.metric("Pulse Rate", f"{st.session_state.heart_rate} BPM")
+    st.subheader("Cardiac")
+    st.metric("Pulse", f"{st.session_state.heart_rate} BPM")
     st.line_chart(np.random.randint(60, 160, 15))
 
-# --- Posture Tab ---
+# SCREEN 3: POSTURE
 with tabs[3]:
+    st.subheader("Posture Analysis")
     st.metric("Alignment Score", "79%")
+    st.caption("AI Pose Modeling active.")
 
-# --- AI Report Tab ---
+# SCREEN 4: CLEAN AI REPORT (Fixed NameError)
 with tabs[4]:
-    if st.button("🔍 GENERATE FULL DIAGNOSIS"):
-        with st.spinner("Crunching Bio-Data..."):
+    st.subheader("📋 Clinical Audit")
+    
+    if st.button("🔍 GENERATE REPORT"):
+        with st.spinner("Analyzing..."):
             time.sleep(2)
             st.session_state.report_ready = True
 
     if st.session_state.report_ready:
+        # Ab u_age session state se aayega, crash nahi hoga
+        current_age = st.session_state.u_age
+        m_age = current_age - 2 if st.session_state.steps > 8000 else current_age + 1
+        vo2_est = round(15 * (190 / st.session_state.heart_rate), 1)
+
+        # Clean Markdown Output
         st.markdown(f"""
         ### 🛡️ STRIDE-AI: FINAL CLINICAL AUDIT
-        **Status:** Optimized | **Metabolic Age:** {st.session_state.u_age - 2}
+        **Status:** Active Monitoring
         
-        **1. Activity:** {st.session_state.steps} steps.
-        **2. Cardiac:** {st.session_state.heart_rate} BPM.
-        **3. Biomechanical:** 79% Stable.
+        ---
+        **1. Physical Activity Summary**
+        Total volume of **{st.session_state.steps} steps** executed. 
+        **Metabolic Age:** Estimated at **{m_age} years**.
         
-        **Verdict:** Subject is physiologically optimized.
+        **2. Cardiovascular Analysis**
+        Current BPM (**{st.session_state.heart_rate}**) is stable. 
+        **VO2 Max:** {vo2_est} mL/kg/min.
+        
+        **3. Biomechanical Integrity**
+        **Posture Score:** 79% (Stable). 
+        **Gait Entropy:** Within 1.2% deviation.
+        
+        ---
+        **⭐ FINAL VERDICT:**  
+        **Subject is physiologically optimized.**
         """)
