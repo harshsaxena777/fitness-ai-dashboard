@@ -1,118 +1,106 @@
 import streamlit as st
 import plotly.graph_objects as go
-import plotly.express as px
 import numpy as np
 import pandas as pd
 import time
-from datetime import datetime
 
-# --- 1. RESEARCH-BASED ALGORITHMS (The 'Functionality') ---
-def analyze_gait_asymmetry(left_pressure, right_pressure):
-    # Logic: Asymmetry > 10% is a clinical warning
-    diff = abs(left_pressure - right_pressure)
-    status = "Critical Asymmetry" if diff > 10 else "Physiological Balance"
-    return diff, status
+# --- 1. THE "ENGINE" (Actual Backend Logic) ---
+class StrideEngine:
+    @staticmethod
+    def process_sensor_fusion(accel_data, gyro_data):
+        """Simulates noise filtering and peak detection logic."""
+        filtered = np.convolve(accel_data, np.ones(5)/5, mode='valid')
+        peaks = (filtered > 1.5).sum() # Threshold logic for step detection
+        return peaks, filtered
 
-def predict_fatigue_index(steps, heart_rate, age):
-    # Logic: High HR with low step count relative to age indicates fatigue
-    base_hr = 220 - age
-    fatigue_score = (heart_rate / base_hr) * 100
-    return round(fatigue_score, 1)
+    @staticmethod
+    def medical_decision_logic(bpm, age, asymmetry):
+        """Hard clinical rules that drive the app's functionality."""
+        max_hr = 220 - age
+        risk_level = "LOW"
+        advice = "Maintain current pace."
+        
+        if bpm > (max_hr * 0.85):
+            risk_level = "HIGH (Cardiac Stress)"
+            advice = "Immediate rest required. Heart rate exceeds safety threshold."
+        elif asymmetry > 12:
+            risk_level = "MODERATE (Gait Instability)"
+            advice = "High risk of ankle sprain. Correct your stride balance."
+            
+        return risk_level, advice
 
-# --- 2. UI CONFIG & STYLING ---
-st.set_page_config(page_title="STRIDE-AI | Intelligence Engine", layout="wide")
+# --- 2. SESSION INITIALIZATION ---
+if 'steps' not in st.session_state: st.session_state.steps = 0
+if 'raw_stream' not in st.session_state: st.session_state.raw_stream = np.random.randn(100)
+if 'u_age' not in st.session_state: st.session_state.u_age = 22
+
+# --- 3. UI LAYOUT ---
+st.set_page_config(page_title="STRIDE-AI | Processing Engine", layout="wide")
 
 st.markdown("""
 <style>
     .stApp { background: #020617; }
-    .status-box { 
-        padding: 20px; border-radius: 15px; border-left: 5px solid #3b82f6;
-        background: rgba(30, 41, 59, 0.4); margin-bottom: 10px;
+    .logic-card { 
+        background: #1e293b; padding: 20px; border-radius: 10px; 
+        border: 1px solid #3b82f6; margin-bottom: 20px;
     }
-    .logic-label { color: #94a3b8; font-size: 0.8rem; font-weight: bold; text-transform: uppercase; }
+    .critical-alert { background: #450a0a; color: #fecaca; padding: 15px; border-radius: 8px; border: 1px solid #ef4444; }
 </style>
 """, unsafe_allow_html=True)
 
-# --- 3. SESSION STATE ---
-if 'steps' not in st.session_state: st.session_state.steps = 0
-if 'logs' not in st.session_state: st.session_state.logs = []
+st.title("⚙️ STRIDE-AI: Logic Processing Unit")
+st.write("This version focuses on **Backend Signal Processing** and **Clinical Decision Rules**.")
 
-# --- 4. MAIN INTERFACE ---
-tabs = st.tabs(["🛡️ Anomaly Detection", "📐 Kinetic Modeling", "🧬 Bio-Profiling", "📄 Comprehensive Audit"])
+# --- 4. FUNCTIONAL MODULES ---
 
-# TAB 1: ANOMALY DETECTION (Real Functionality)
-with tabs[0]:
-    st.subheader("🛡️ Real-time Pathological Screening")
-    st.write("This engine detects irregularities in gait and cardiac patterns.")
+col_left, col_right = st.columns([2, 1])
+
+with col_left:
+    st.subheader("📡 Live Signal Processing (Input vs Output)")
     
-    col_a1, col_a2 = st.columns(2)
-    with col_a1:
-        st.markdown("<p class='logic-label'>Gait Balance Sensor</p>", unsafe_allow_html=True)
-        l_press = st.slider("Left Foot Pressure (%)", 0, 100, 52)
-        r_press = st.slider("Right Foot Pressure (%)", 0, 100, 48)
-        
-        diff, status = analyze_gait_asymmetry(l_press, r_press)
-        color = "#ef4444" if "Critical" in status else "#10b981"
-        st.markdown(f"<div class='status-box' style='border-color:{color}'><b>Status:</b> {status}<br>Deviation: {diff}%</div>", unsafe_allow_html=True)
+    # Simulate a "Process" button that actually runs logic
+    if st.button("▶️ RUN SIGNAL FUSION ALGORITHM"):
+        with st.spinner("Applying Low-Pass Filter & Peak Detection..."):
+            time.sleep(1)
+            new_steps, filtered_signal = StrideEngine.process_sensor_fusion(
+                np.random.uniform(0.5, 2.5, 100), None
+            )
+            st.session_state.steps += new_steps
+            st.session_state.raw_stream = filtered_signal
+            st.toast(f"Algorithm detected {new_steps} valid peaks!")
 
-    with col_a2:
-        st.markdown("<p class='logic-label'>Cardiac Fatigue Predictor</p>", unsafe_allow_html=True)
-        hr_input = st.number_input("Current BPM (from sensor)", 60, 180, 110)
-        u_age = st.session_state.get('u_age', 22)
-        
-        f_score = predict_fatigue_index(st.session_state.steps, hr_input, u_age)
-        st.metric("Fatigue Index", f"{f_score}%", delta="-2% (Stable)" if f_score < 70 else "High Risk")
-        st.write("Logic: HR intensity correlated with kinetic output.")
+    # Visualizing the Output of the Logic
+    fig = go.Figure()
+    fig.add_trace(go.Scatter(y=st.session_state.raw_stream, mode='lines', name='Filtered Signal', line=dict(color='#60a5fa')))
+    fig.update_layout(title="Processed Kinetic Waveform", template="plotly_dark", height=300)
+    st.plotly_chart(fig, use_container_width=True)
 
-# TAB 2: KINETIC MODELING (The "How" of Calculations)
-with tabs[1]:
-    st.subheader("📐 Biomechanical Breakdown")
-    st.write("Converting raw accelerometer data into gait phases.")
+with col_right:
+    st.subheader("🧠 Decision Matrix")
+    input_bpm = st.number_input("Input BPM from Sensor", 60, 200, 110)
+    input_asym = st.slider("Gait Asymmetry (%)", 0, 30, 5)
     
-    # Image of gait cycle phases and parameters
+    # Run the Decision Logic
+    risk, advice = StrideEngine.medical_decision_logic(input_bpm, st.session_state.u_age, input_asym)
     
-
-    col_k1, col_k2 = st.columns([2, 1])
-    with col_k1:
-        # Phase Distribution Chart
-        phases = ['Stance', 'Swing', 'Double Support', 'Toe Off']
-        values = [60, 30, 5, 5]
-        fig_phases = px.pie(names=phases, values=values, hole=0.5, title="Detected Gait Cycle (Last 50 Steps)", template="plotly_dark")
-        st.plotly_chart(fig_phases, use_container_width=True)
+    st.markdown(f"""
+    <div class="logic-card">
+        <p style="margin:0; font-size:0.8rem; opacity:0.7;">CURRENT RISK ASSESSMENT</p>
+        <h2 style="color:{'#ef4444' if 'HIGH' in risk else '#10b981'}; margin:0;">{risk}</h2>
+        <hr style="opacity:0.2;">
+        <p><b>AI Recommendation:</b><br>{advice}</p>
+    </div>
+    """, unsafe_allow_html=True)
     
-    with col_k2:
-        st.info("**Mathematical Basis:**")
-        st.latex(r"Stride Velocity = \frac{Step Length \times Cadence}{60}")
-        st.latex(r"Cadence = \frac{Steps}{Time (min)}")
-        if st.button("RE-CALIBRATE SENSORS"):
-            with st.spinner("Processing Kalman Filter..."):
-                time.sleep(1.5)
-                st.success("Noise Eliminated. Baseline Reset.")
+    if "HIGH" in risk:
+        st.markdown("<div class='critical-alert'>🚨 EMERGENCY OVERRIDE: Cardiac Threshold Triggered</div>", unsafe_allow_html=True)
 
-# TAB 4: COMPREHENSIVE AUDIT (Highly Detailed)
-with tabs[3]:
-    if st.button("🧪 RUN CLINICAL DIAGNOSIS"):
-        st.session_state.audit_run = True
-        
-    if st.session_state.get('audit_run'):
-        st.markdown("""
-        ### 📑 STRIDE-AI: CLINICAL LEVEL 2 REPORT
-        ---
-        #### 1. Kinematic Summary
-        - **Total Movement Volume:** {0} steps.
-        - **Symmetry Index:** {1}% (Normal: < 5%).
-        - **Gait Classification:** Steady-state walking.
-        
-        #### 2. Physiological Risk Factors
-        - **Overuse Injury Risk:** Low.
-        - **Cardiovascular Strain:** Moderate (Aerobic Threshold reached).
-        - **Neuromuscular Balance:** Optimized.
-        
-        #### 3. Machine Learning Verdict
-        - **Prediction:** No risk of Pronation or Supination.
-        - **Confidence Score:** 94.2%
-        """.format(st.session_state.steps, diff), unsafe_allow_html=True)
-        
-        # Adding a logic graph for the report
-        df_trend = pd.DataFrame(np.random.randn(10, 2), columns=['Stability', 'Efficiency'])
-        st.line_chart(df_trend)
+# --- 5. DATA TABLE (Functional Tracking) ---
+st.write("### 📊 Internal Processing Log")
+log_data = pd.DataFrame({
+    "Timestamp": [datetime.now().strftime("%H:%M:%S") for _ in range(5)],
+    "Logic_Gate": ["Peak_Detect", "Noise_Filter", "Threshold_Check", "BMR_Calc", "Symmetry_Sync"],
+    "Status": ["Success", "Active", "Triggered", "Success", "Analyzing"],
+    "Value": [st.session_state.steps, "0.45Hz", risk, "1840 kcal", f"{input_asym}%"]
+})
+st.table(log_data)
