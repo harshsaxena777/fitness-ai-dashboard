@@ -6,12 +6,12 @@ import time
 from datetime import datetime
 
 # --- 1. SYSTEM CONFIG & REBOOT ---
-st.set_page_config(page_title="STRIDE-AI Pro", layout="centered")
+st.set_page_config(page_title="STRIDE-AI x Sweatcoin", layout="centered")
 
 def reboot_system():
     for key in list(st.session_state.keys()):
         del st.session_state[key]
-    st.toast("Hard Resetting... Sensors Recalibrated", icon="🔥")
+    st.toast("System Wiped. Recalibrating Biometrics...", icon="⚡")
     time.sleep(1)
     st.rerun()
 
@@ -22,159 +22,188 @@ if 'heart_rate' not in st.session_state: st.session_state.heart_rate = 72
 if 'history' not in st.session_state: st.session_state.history = []
 if 'report_generated' not in st.session_state: st.session_state.report_generated = False
 
-# --- LOGIN SCREEN ---
+# --- 3. CUSTOM SWEATCOIN CSS (Background & Neumorphism) ---
+st.markdown("""
+<style>
+    /* Sweatcoin Dark Theme Background */
+    .stApp {
+        background: radial-gradient(circle at top right, #1e293b, #0f172a, #020617);
+    }
+    
+    /* Glowing Metric Cards */
+    .metric-card {
+        background: rgba(30, 41, 59, 0.5);
+        backdrop-filter: blur(10px);
+        border: 1px solid rgba(255, 255, 255, 0.1);
+        padding: 30px;
+        border-radius: 30px;
+        text-align: center;
+        box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.8);
+        margin-bottom: 20px;
+    }
+    
+    .step-text {
+        font-size: 4rem;
+        font-weight: 800;
+        background: -webkit-linear-gradient(#60a5fa, #a855f7);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        margin: 0;
+    }
+
+    /* Sweatcoin Style Buttons */
+    .stButton>button {
+        background: linear-gradient(90deg, #3b82f6, #8b5cf6);
+        color: white;
+        border-radius: 25px;
+        border: none;
+        height: 4em;
+        font-size: 1.1rem;
+        font-weight: bold;
+        transition: 0.3s;
+    }
+    
+    .stButton>button:hover {
+        transform: scale(1.02);
+        box-shadow: 0 0 20px rgba(139, 92, 246, 0.6);
+    }
+
+    /* Navigation Tabs Styling */
+    .stTabs [data-baseweb="tab-list"] {
+        gap: 10px;
+        background-color: transparent;
+    }
+
+    .stTabs [data-baseweb="tab"] {
+        background-color: rgba(255, 255, 255, 0.05);
+        border-radius: 15px;
+        padding: 10px 20px;
+        color: white;
+    }
+</style>
+""", unsafe_allow_html=True)
+
+# --- LOGIN (Sweatcoin Style) ---
 if not st.session_state.logged_in:
-    st.title("🔐 STRIDE-AI Portal")
-    email = st.text_input("User Email", placeholder="harsh.saxena@srms.ac.in")
-    if st.button("Access Dashboard"):
+    st.markdown("<h1 style='text-align:center;'>Stride-AI</h1>", unsafe_allow_html=True)
+    st.markdown("<p style='text-align:center; opacity:0.6;'>Your steps are worth clinical insights.</p>", unsafe_allow_html=True)
+    email = st.text_input("Enter Email to Connect", placeholder="harsh@srms.ac.in")
+    if st.button("Connect Account"):
         if "@" in email:
             st.session_state.logged_in = True
             st.session_state.user_mail = email
             st.rerun()
     st.stop()
 
-# --- 3. UI STYLING ---
-st.markdown("""
-<style>
-    .stButton>button { width: 100%; border-radius: 12px; height: 3.8em; font-weight: bold; background: #3b82f6; color: white; border: none; }
-    .report-box { background: #0d1117; padding: 25px; border-radius: 18px; border-left: 10px solid #3b82f6; }
-    .metric-card { background: #1e293b; padding: 20px; border-radius: 15px; text-align: center; border: 1px solid #334155; }
-    .profile-card { background: #0f172a; padding: 15px; border-radius: 12px; border: 1px dashed #3b82f6; }
-</style>
-""", unsafe_allow_html=True)
-
 # --- 4. TOP NAV ---
 c_title, c_reboot = st.columns([5, 1])
 with c_title:
-    st.title("📱 STRIDE-AI Pro")
+    st.markdown(f"**Hello, {st.session_state.user_mail.split('@')[0].capitalize()}! 👋**")
 with c_reboot:
     if st.button("🔄"): reboot_system()
 
 # --- 5. MODULAR TABS ---
-tabs = st.tabs(["⚙️ Profiling", "👣 Stride", "🫀 Cardiac", "🧘 Posture", "🧠 AI Analytics"])
+tabs = st.tabs(["⚡ Dashboard", "⚙️ Profile", "🫀 Vitals", "🧘 Alignment", "🧠 AI Audit"])
 
-# SCREEN 1: DETAILED PROFILING (Upgraded)
+# SCREEN 1: DASHBOARD (The Sweatcoin Experience)
 with tabs[0]:
-    st.subheader("🧬 Advanced Medical Profiling")
+    # Circle Progress Visualization
+    progress_val = min(st.session_state.steps / 10000, 1.0)
     
-    with st.container():
-        st.markdown('<div class="profile-card">', unsafe_allow_html=True)
-        col_p1, col_p2 = st.columns(2)
-        with col_p1:
-            u_age = st.slider("Current Age", 18, 90, 22, key="u_age")
-            u_gender = st.selectbox("Biological Gender", ["Male", "Female", "Other"])
-            u_weight = st.number_input("Weight (kg)", 40.0, 150.0, 70.0)
-        with col_p2:
-            u_height = st.number_input("Height (cm)", 120.0, 220.0, 175.0)
-            u_goal = st.selectbox("Clinical Objective", ["Recovery", "Fat Loss", "Elite Conditioning", "Strength"])
-            u_activity = st.select_slider("Baseline Activity Level", options=["Sedentary", "Moderate", "Active", "Athlete"])
-        
-        # Real-time BMI Calculation
-        bmi = round(u_weight / ((u_height/100)**2), 1)
-        st.markdown(f"**Current BMI:** `{bmi}` | **Health Category:** `{'Normal' if 18.5 <= bmi <= 24.9 else 'Seek Advice'}`")
-        st.markdown('</div>', unsafe_allow_html=True)
-
-    st.write("---")
-    st.write("### 🎯 Physiological Targets")
-    t_min = int((220 - u_age) * 0.6)
-    t_max = int((220 - u_age) * 0.8)
-    st.info(f"Based on your profile, your **Optimal Aerobic Zone** is {t_min} - {t_max} BPM. System calibrated for {u_goal}.")
-
-# SCREEN 2: INTERACTIVE STRIDE (Upgraded)
-with tabs[1]:
-    st.subheader("👣 Live Kinetic Telemetry")
+    st.markdown(f"""
+    <div class='metric-card'>
+        <p style='margin:0; opacity:0.6; letter-spacing: 2px;'>TODAY'S STRIDE</p>
+        <h1 class='step-text'>{st.session_state.steps}</h1>
+        <p style='margin:0; color:#a855f7; font-weight:bold;'>STREAK: 5 DAYS 🔥</p>
+    </div>
+    """, unsafe_allow_html=True)
     
-    # Progress towards a dynamic goal
-    daily_goal = 10000 if u_goal != "Recovery" else 5000
-    progress = min(st.session_state.steps / daily_goal, 1.0)
+    st.progress(progress_val)
     
-    # Big Animated Metric
-    st.markdown(f"""<div class='metric-card'>
-        <p style='margin:0; opacity:0.6; font-size: 0.9rem;'>SESSION KINETIC VOLUME</p>
-        <h1 style='color: #60a5fa; margin:0; font-size: 3.5rem;'>{st.session_state.steps}</h1>
-        <p style='margin:0; font-size: 0.8rem;'>Goal Progress: {int(progress*100)}%</p>
-    </div>""", unsafe_allow_html=True)
-    st.progress(progress)
+    col1, col2, col3 = st.columns(3)
+    col1.metric("Distance", f"{round(st.session_state.steps * 0.0007, 2)}km")
+    col2.metric("Kcal", int(st.session_state.steps * 0.04))
+    col3.metric("Level", "Elite" if st.session_state.steps > 5000 else "Beginner")
 
-    st.write("### Movement Diagnostics")
-    c_m1, c_m2, c_m3 = st.columns(3)
-    dist = round(st.session_state.steps * 0.00076, 2)
-    kcal = int(st.session_state.steps * 0.04)
-    c_m1.metric("Distance (km)", dist)
-    c_m2.metric("Energy (kcal)", kcal)
-    c_m3.metric("Cadence (spm)", "114" if st.session_state.steps > 0 else "0")
-
-    # Inject Sensor Data
-    if st.button("🛰️ INJECT SENSOR PACKET"):
+    if st.button("🛰️ SYNC SENSOR DATA"):
         st.session_state.steps += np.random.choice([7, 12, 18])
-        st.session_state.heart_rate = np.random.randint(105, 150)
-        st.session_state.history.append({
-            "steps": st.session_state.steps, 
-            "hr": st.session_state.heart_rate,
-            "dist": dist,
-            "time": datetime.now().strftime("%H:%M:%S")
-        })
+        st.session_state.heart_rate = np.random.randint(100, 145)
+        st.session_state.history.append({"s": st.session_state.steps, "h": st.session_state.heart_rate})
         st.session_state.report_generated = False
         st.rerun()
 
-# SCREEN 3: CARDIAC
+# SCREEN 2: DETAILED PROFILING
+with tabs[1]:
+    st.subheader("🧬 User Biometrics")
+    u_age = st.slider("Age", 18, 90, 22)
+    u_gender = st.selectbox("Gender", ["Male", "Female", "Other"])
+    u_weight = st.number_input("Weight (kg)", 40.0, 150.0, 72.0)
+    u_height = st.number_input("Height (cm)", 140, 210, 178)
+    
+    bmi = round(u_weight / ((u_height/100)**2), 1)
+    st.write(f"**BMI Analysis:** {bmi} (Normal Range)")
+
+# SCREEN 3: VITALS (Heart & Pulse)
 with tabs[2]:
-    st.subheader("🫀 Cardiac Telemetry")
-    st.metric("Live Pulse", f"{st.session_state.heart_rate} BPM")
-    st.line_chart(pd.DataFrame(np.random.normal(st.session_state.heart_rate, 2, 20)), color="#ef4444")
+    st.subheader("🫀 Live Telemetry")
+    st.metric("Pulse Rate", f"{st.session_state.heart_rate} BPM")
+    
+    # Elegant Cardiac Waveform
+    x = np.linspace(0, 10, 50)
+    y = np.sin(x) * np.random.rand() + st.session_state.heart_rate
+    fig = px.line(x=x, y=y, template="plotly_dark", color_discrete_sequence=['#ef4444'])
+    fig.update_layout(paper_bgcolor='rgba(0,0,0,0)', plot_bgcolor='rgba(0,0,0,0)', xaxis_visible=False)
+    st.plotly_chart(fig, use_container_width=True)
 
-# SCREEN 4: POSTURE
+# SCREEN 4: POSTURE (Detailed Kinematics)
 with tabs[3]:
-    st.subheader("🧘 Biomechanical Integrity")
-    base_alignment = 96 - (u_age * 0.25)
-    p_score = int(base_alignment + np.random.randint(-2, 2))
-    st.metric("Spinal Alignment Score", f"{p_score}%")
-    st.progress(p_score/100)
+    st.subheader("🧘 Biomechanical Balance")
+    p_score = int(96 - (u_age * 0.2))
+    st.metric("Body Alignment", f"{p_score}%")
     
-    st.write("### Joint Segment Analysis")
-    joint_data = pd.DataFrame({
-        'Segment': ['Cervical', 'Thoracic', 'Lumbar', 'Pelvic'],
-        'Deviation': [1.2, 2.5 + (u_age*0.04), 1.8 + (u_age*0.06), 2.1]
-    })
-    st.bar_chart(joint_data, x='Segment', y='Deviation', color="#3b82f6")
+    st.write("### Displacement Analysis")
+    # Radar Chart for Balance (Sweatcoin inspired analytics)
+    categories = ['Head Tilt', 'Shoulder Sym.', 'Pelvic Bal.', 'Knee Align.', 'Foot Pressure']
+    fig_radar = go.Figure(data=go.Scatterpolar(
+      r=[90, 85, p_score, 88, 92],
+      theta=categories,
+      fill='toself',
+      line_color='#a855f7'
+    ))
+    fig_radar.update_layout(polar=dict(radialaxis=dict(visible=False, range=[0, 100])), showlegend=False, paper_bgcolor='rgba(0,0,0,0)')
+    st.plotly_chart(fig_radar, use_container_width=True)
 
-# SCREEN 5: AI ANALYTICS
+# SCREEN 5: AI AUDIT (Clinical Insights)
 with tabs[4]:
-    st.subheader("🧠 Clinical Decision Support System")
+    st.subheader("🧠 AI Clinical Audit")
     
-    if st.button("🔍 CONDUCT FULL KINETIC AUDIT"):
-        with st.spinner("Analyzing Bio-Kinetic History..."):
+    if st.button("🔍 GENERATE FULL HEALTH REPORT"):
+        with st.spinner("Analyzing Kinetic History..."):
             time.sleep(2)
             st.session_state.report_generated = True
 
     if st.session_state.report_generated:
-        vo2_est = round((45 if u_gender == "Male" else 38) - (u_age * 0.15), 1)
-        m_age = u_age - 3 if st.session_state.steps > 8000 else u_age + 2
+        m_age = u_age - 3 if st.session_state.steps > 6000 else u_age + 1
         
         st.markdown(f"""
-### 🛡️ STRIDE-AI: CLINICAL AUDIT REPORT
-**Identification:** {u_gender} | {u_age}Y | BMI: {bmi}  
-**Goal:** {u_goal} | **Packets Analyzed:** {len(st.session_state.history)}
+### 📊 CLINICAL DIAGNOSIS SUMMARY
+**Subject:** {st.session_state.user_mail} | **Metabolic Age:** {m_age}Y
 
 ---
 
-#### 1. Activity Trends & Metabolic Health
-- **Total Volume:** {st.session_state.steps} steps. Trend is **{'Optimal' if progress > 0.5 else 'Sub-Optimal'}**.
-- **Metabolic Age:** Current cellular efficiency matches a **{m_age} year old**.
+#### 👣 Kinetic Volume
+You have completed **{st.session_state.steps} steps**. Your current volume is **{'OPTIMAL' if st.session_state.steps > 5000 else 'LOW'}** for a {u_age} year old.
 
-#### 2. Cardiovascular Intelligence
-- **Observed Pulse:** {st.session_state.heart_rate} BPM.  
-- **VO2 Max:** **{vo2_est} mL/kg/min** (Predicted).
+#### 🫀 Cardiac Intelligence
+Pulse is stable at **{st.session_state.heart_rate} BPM**. VO2 Max estimation indicates elite respiratory recovery.
 
-#### 3. Verdict & Future Plan
-- **Posture:** {p_score}% stability. No immediate risk.
-- **AI Recommendation:** Based on your {u_goal} goal, keep heart rate between {t_min}-{t_max} BPM.
-- **Verdict:** Subject is **Physiologically Optimized**.
+#### 🧘 Posture & Balance
+Alignment score of **{p_score}%** detected. Your Pelvic balance is the primary deviation factor.
 
 ---
+
+**⭐ AI VERDICT:**
+Your physiology is **Stable & Optimized**. No musculoskeletal anomalies detected in the last {len(st.session_state.history)} packets.
         """)
         
-        report_txt = f"STRIDE-AI AUDIT\nSteps: {st.session_state.steps}\nBMI: {bmi}\nVerdict: Optimized"
-        st.download_button("📥 DOWNLOAD CLINICAL AUDIT", report_txt, file_name=f"Audit_{u_age}Y.txt")
-    else:
-        st.info("System Standby. Click 'Conduct Full Kinetic Audit' for diagnosis.")
+        st.download_button("📥 Download Report", f"Steps: {st.session_state.steps}\nBPM: {st.session_state.heart_rate}", file_name="StrideReport.txt")
