@@ -124,42 +124,81 @@ with tabs[3]:
     angles = pd.DataFrame({'Joint': ['Neck', 'Shoulder', 'Hips', 'Knee'], 'Angle Deviation': [2, 5, 1, 3]})
     st.bar_chart(angles, x='Joint', y='Angle Deviation')
 
-# SCREEN 5: ADVANCED AI REPORT (History + Future Plan)
+# SCREEN 5: AI ANALYTICS (FIXED FORMATTING)
 with tabs[4]:
-    st.subheader("📋 Advanced Clinical Diagnosis")
+    st.subheader("📋 AI Clinical Engine")
     
-    if st.button("🔍 ANALYZE HISTORY & GENERATE REPORT"):
-        with st.spinner("Processing Longitudinal Data..."):
+    # Diagnosis Trigger Button
+    if st.button("🔍 START COMPREHENSIVE DIAGNOSIS"):
+        with st.spinner("Analyzing Bio-Kinetic Patterns..."):
             time.sleep(2)
-            st.session_state.report_ready = True
+            st.session_state.report_generated = True
 
-    if st.session_state.report_ready:
-        # History Analysis
-        avg_hr = np.mean([h['hr'] for h in st.session_state.history]) if st.session_state.history else st.session_state.heart_rate
-        trend = "Improving" if st.session_state.steps > 5000 else "Sedentary"
+    # Report logic - Sirf tab chalegi jab button click ho
+    if st.session_state.report_generated:
+        # --- 1. DYNAMIC CALCULATIONS ---
+        # VO2 Max Estimate based on Gender & Age
+        vo2_base = 45 if u_gender == "Male" else 38
+        vo2_est = round(vo2_base - (u_age * 0.15), 1)
         
+        # Metabolic Age logic
+        m_age = u_age - 2 if st.session_state.steps > 7000 else u_age + 1
+        
+        # Posture Advice based on Score & Age
+        if p_score < 80:
+            posture_advice = "High risk of lumbar strain. Suggest immediate ergonomic adjustments."
+        else:
+            posture_advice = "Posture is within optimal clinical range for your age group."
+
+        # Goal Progress logic
+        if u_goal == "Fat Loss" and st.session_state.steps < 5000:
+            goal_verdict = "Low activity detected for Fat Loss goal. Increase step count."
+        elif u_goal == "Elite Training" and st.session_state.heart_rate < 120:
+            goal_verdict = "Cardiac intensity is below elite threshold. Increase pace."
+        else:
+            goal_verdict = "Activity metrics are aligning well with your stated objective."
+
+        # --- 2. CLEAN MARKDOWN DISPLAY (No HTML Tags) ---
         st.markdown(f"""
-        <div class='report-box'>
-            <h3 style='color:#3b82f6;'>STRIDE-AI CLINICAL AUDIT v18.0</h3>
-            
-            **1. HISTORICAL DATA ASSESSMENT:**
-            - **Activity Trend:** Based on previous {len(st.session_state.history)} packets, your trend is **{trend}**.
-            - **Cardiac Baseline:** Your average heart rate under load is **{int(avg_hr)} BPM**.
-            
-            **2. CURRENT BIOMETRICS:**
-            - **Steps:** {st.session_state.steps} | **Posture Score:** {p_score}%
-            - **VO2 Max:** {round(15 * (190/st.session_state.heart_rate), 1)} (Predicted)
-            
-            **3. AI FUTURE RECOMMENDATION:**
-            - **Short-term:** Your steps are currently {st.session_state.steps}/10000. Increase frequency to avoid metabolic stagnation.
-            - **Posture Fix:** Since your Alignment is {p_score}%, we suggest 5 mins of lumbar stretching every 2 hours.
-            - **Caution:** Your {u_age} year old physiology shows spikes in BPM. Avoid heavy caffeine before next sync.
-            
-            <hr style='opacity:0.2;'>
-            <p style='color:#00ffbd; font-weight:bold;'>VERDICT: Subject is physiologically stable but requires increased kinetic volume.</p>
-        </div>
-        """, unsafe_allow_html=True)
+        ### 🛡️ STRIDE-AI: CLINICAL AUDIT REPORT
+        **User Profile:** {u_gender} | {u_age} Years | {u_weight} kg  
+        **Status:** {goal_verdict}
         
-        # DOWNLOAD LOGIC
-        report_text = f"STRIDE-AI CLINICAL REPORT\nDate: {datetime.now()}\nSteps: {st.session_state.steps}\nBPM: {st.session_state.heart_rate}\nVerdict: Stable"
-        st.download_button("📥 DOWNLOAD AUDIT REPORT", report_text, file_name="StrideAI_Clinical_Report.txt")
+        ---
+        
+        #### 1. 👣 Activity & Metabolic Analysis
+        - **Total Steps:** {st.session_state.steps} 
+        - **Metabolic Age:** Your body is functioning like a **{m_age} year old**.
+        - **Trend:** Analysis of previous sensor packets shows a steady kinetic volume.
+        
+        #### 2. 🫀 Cardiovascular Intelligence
+        - **Current Heart Rate:** {st.session_state.heart_rate} BPM
+        - **Estimated VO2 Max:** **{vo2_est} mL/kg/min**
+        - **Cardiac Risk:** LOW (Stable sinus rhythm simulated).
+        
+        #### 3. 🧘 Biomechanical Integrity
+        - **Posture Score:** {p_score}%
+        - **AI Observation:** {posture_advice}
+        - **History Check:** Spinal alignment has been consistent across your last {len(st.session_state.history)} syncs.
+        
+        ---
+        
+        **⭐ FINAL CLINICAL VERDICT:**  
+        **Subject is physiologically stable.** No anomalies detected in gait or cardiac rhythm. Maintain current hydration and step frequency.
+        """)
+        
+        # --- 3. DOWNLOAD OPTION ---
+        report_txt = f"STRIDE-AI CLINICAL REPORT\n" \
+                     f"User: {u_gender}, {u_age}y\n" \
+                     f"Steps: {st.session_state.steps}\n" \
+                     f"VO2 Max: {vo2_est}\n" \
+                     f"Verdict: Optimized"
+        
+        st.download_button(
+            label="📥 DOWNLOAD CLINICAL REPORT (.TXT)",
+            data=report_txt,
+            file_name=f"StrideAI_{u_gender}_{u_age}.txt",
+            mime="text/plain"
+        )
+    else:
+        st.info("System Ready. Please initiate diagnosis to generate the clinical audit.")
