@@ -23,10 +23,10 @@ if 'heart_rate' not in st.session_state: st.session_state.heart_rate = 72
 if 'history' not in st.session_state: st.session_state.history = []
 if 'report_generated' not in st.session_state: st.session_state.report_generated = False
 
-# --- 3. CUSTOM SWEATCOIN CSS (Background & Neumorphism) ---
+# --- 3. CUSTOM CSS (Background ) ---
 st.markdown("""
 <style>
-    /* Sweatcoin Dark Theme Background */
+    /* Dark Theme Background */
     .stApp {
         background: radial-gradient(circle at top right, #1e293b, #0f172a, #020617);
     }
@@ -52,7 +52,7 @@ st.markdown("""
         margin: 0;
     }
 
-    /* Sweatcoin Style Buttons */
+    /* Style Buttons */
     .stButton>button {
         background: linear-gradient(90deg, #3b82f6, #8b5cf6);
         color: white;
@@ -106,7 +106,7 @@ with c_reboot:
 # --- 5. MODULAR TABS ---
 tabs = st.tabs(["⚡ Dashboard", "⚙️ Profile", "🫀 Vitals", "🧘 Alignment", "🧠 AI Audit"])
 
-# SCREEN 1: DASHBOARD (The Sweatcoin Experience)
+# SCREEN 1: DASHBOARD (Experience)
 with tabs[0]:
     # Circle Progress Visualization
     progress_val = min(st.session_state.steps / 10000, 1.0)
@@ -163,7 +163,7 @@ with tabs[3]:
     st.metric("Body Alignment", f"{p_score}%")
     
     st.write("### Displacement Analysis")
-    # Radar Chart for Balance (Sweatcoin inspired analytics)
+    # Radar Chart for Balance (analytics)
     categories = ['Head Tilt', 'Shoulder Sym.', 'Pelvic Bal.', 'Knee Align.', 'Foot Pressure']
     fig_radar = go.Figure(data=go.Scatterpolar(
       r=[90, 85, p_score, 88, 92],
