@@ -174,7 +174,7 @@ with tabs[3]:
     fig_radar.update_layout(polar=dict(radialaxis=dict(visible=False, range=[0, 100])), showlegend=False, paper_bgcolor='rgba(0,0,0,0)')
     st.plotly_chart(fig_radar, use_container_width=True)
 
-# SCREEN 5: AI AUDIT (Clinical Insights)
+# --- SCREEN 5: AI AUDIT (Dynamic Logic) ---
 with tabs[4]:
     st.subheader("🧠 AI Clinical Audit")
     
@@ -184,27 +184,51 @@ with tabs[4]:
             st.session_state.report_generated = True
 
     if st.session_state.report_generated:
-        m_age = u_age - 3 if st.session_state.steps > 6000 else u_age + 1
+        # 1. BMI Logic
+        bmi = u_weight / ((u_height/100)**2)
         
+        # 2. Heart Rate Safety (Max HR = 220 - Age)
+        max_hr = 220 - u_age
+        hr_status = "Normal"
+        if st.session_state.heart_rate > (max_hr * 0.85): hr_status = "CRITICAL (High Intensity)"
+        elif st.session_state.heart_rate < 60: hr_status = "Bradycardia Risk"
+
+        # 3. Dynamic Verdict Logic
+        verdict = "Stable & Optimized"
+        color = "green"
+        recommendation = "Maintain current activity level."
+
+        if bmi > 30 or bmi < 18.5:
+            verdict = "Physiological Stress Detected"
+            color = "orange"
+            recommendation = "Consult a nutritionist. BMI is outside optimal range."
+        
+        if u_age > 70 and st.session_state.steps > 8000:
+            verdict = "Over-Exertion Warning"
+            color = "red"
+            recommendation = "High volume detected for age group. Reduce intensity."
+            
+        if st.session_state.heart_rate > 140 and u_age > 50:
+            verdict = "Cardiac Alert"
+            color = "red"
+            recommendation = "Heart rate exceeding safety threshold for age. Rest immediately."
+
         st.markdown(f"""
-### 📊 CLINICAL DIAGNOSIS SUMMARY
-**Subject:** {st.session_state.user_mail} | **Metabolic Age:** {m_age}Y
-
----
-
-#### 👣 Kinetic Volume
-You have completed **{st.session_state.steps} steps**. Your current volume is **{'OPTIMAL' if st.session_state.steps > 5000 else 'LOW'}** for a {u_age} year old.
-
-#### 🫀 Cardiac Intelligence
-Pulse is stable at **{st.session_state.heart_rate} BPM**. VO2 Max estimation indicates elite respiratory recovery.
-
-#### 🧘 Posture & Balance
-Alignment score of **{p_score}%** detected. Your Pelvic balance is the primary deviation factor.
-
----
-
-**⭐ AI VERDICT:**
-Your physiology is **Stable & Optimized**. No musculoskeletal anomalies detected in the last {len(st.session_state.history)} packets.
-        """)
+        ### 📊 CLINICAL DIAGNOSIS SUMMARY
+        **Subject:** {st.session_state.user_mail} | **BMI:** {round(bmi, 1)}
         
-        st.download_button("📥 Download Report", f"Steps: {st.session_state.steps}\nBPM: {st.session_state.heart_rate}", file_name="StrideReport.txt")
+        ---
+        #### 👣 Kinetic Volume
+        - **Steps:** {st.session_state.steps} 
+        - **Status:** {"Active" if st.session_state.steps > 5000 else "Sedentary"}
+        
+        #### 🫀 Cardiac Intelligence
+        - **BPM:** {st.session_state.heart_rate}
+        - **Safety Threshold:** {max_hr} BPM (Max)
+        - **Cardiac Status:** {hr_status}
+
+        ---
+        #### ⭐ AI VERDICT:
+        <h3 style='color:{color};'>{verdict}</h3>
+        **Recommendation:** {recommendation}
+        """, unsafe_allow_html=True)
