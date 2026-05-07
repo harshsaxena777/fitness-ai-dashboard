@@ -7,7 +7,7 @@ import time
 from datetime import datetime
 
 # --- 1. SYSTEM CONFIG & REBOOT ---
-st.set_page_config(page_title="STRIDE-AI x Sweatcoin", layout="centered")
+st.set_page_config(page_title="STRIDE-AI", layout="centered")
 
 def reboot_system():
     for key in list(st.session_state.keys()):
